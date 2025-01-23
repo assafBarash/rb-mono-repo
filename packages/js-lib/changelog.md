@@ -1,3 +1,10 @@
+# js-lib [1.2.0](https://github.com/assafBarash/rb-mono-repo/compare/js-lib@1.1.0...js-lib@1.2.0) (2025-01-23)
+
+
+### Features
+
+* **rb-mono-repo:** github registry ([5c6c801](https://github.com/assafBarash/rb-mono-repo/commit/5c6c801fe6381aae7360ef6bbc814d065500c0be))
+
 # js-lib [1.1.0](https://github.com/assafBarash/rb-mono-repo/compare/js-lib@1.0.0...js-lib@1.1.0) (2025-01-23)
 
 
