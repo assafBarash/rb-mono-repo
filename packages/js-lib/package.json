@@ -38,5 +38,8 @@
     "types": "tsc -d --emitDeclarationOnly --outDir ./dist",
     "lint": "tsc --noEmit && eslint . --cache --cache-location ../../node_modules/.eslint",
     "format": "prettier . --write --cache-location ../../node_modules/.prettier --ignore-path ../../.prettierignore"
+  },
+  "release": {
+    "extends": "doogu/release.config.js"
   }
 }
