@@ -3,7 +3,7 @@
   "description": "A bare-bones template for shared utilities",
   "version": "0.0.0-development",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
+    "registry": "https://npm.pkg.github.com/assafBarash/js-lib",
     "access": "public"
   },
   "author": "Your ORG (https://example.com)",
