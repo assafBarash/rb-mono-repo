@@ -1,5 +1,5 @@
 {
-  "name": "js-lib",
+  "name": "@assafBarash/js-lib",
   "description": "A bare-bones template for shared utilities",
   "version": "0.0.0-development",
   "publishConfig": {
