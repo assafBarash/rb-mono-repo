@@ -33,6 +33,8 @@ jobs:
           node-version: 'lts/*'
 
       - name: Check Environment Variables
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: env
 
       - name: Install dependencies
