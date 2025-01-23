@@ -32,6 +32,9 @@ jobs:
         with:
           node-version: 'lts/*'
 
+      - name: Check Environment Variables
+        run: env
+
       - name: Install dependencies
         run: npm clean-install
 
