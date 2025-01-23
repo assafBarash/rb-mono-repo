@@ -4,8 +4,8 @@
   "version": "0.0.0-development",
   "private": true,
   "author": "Your ORG (https://example.com)",
-  "repository": "https://https://github.com/assafBarash/rb-mono-repo",
-  "bugs": "https://https://github.com/assafBarash/rb-mono-repo/issues",
+  "repository": "https://github.com/assafBarash/rb-mono-repo",
+  "bugs": "https://github.com/assafBarash/rb-mono-repo/issues",
   "license": "MIT",
   "keywords": [
     "github",

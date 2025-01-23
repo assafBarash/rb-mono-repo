@@ -6,8 +6,8 @@
     "access": "public"
   },
   "author": "Your ORG (https://example.com)",
-  "repository": "https://https://github.com/assafBarash/rb-mono-repo",
-  "homepage": "https://https://github.com/assafBarash/rb-mono-repo/tree/main/packages/js-lib",
+  "repository": "https://github.com/assafBarash/rb-mono-repo",
+  "homepage": "https://github.com/assafBarash/rb-mono-repo/tree/main/packages/js-lib",
   "license": "MIT",
   "keywords": [
     "lib"
