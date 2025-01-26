@@ -1,4 +1,4 @@
-import foo from '@assafBarash/js-lib'
+import { foo } from '@assafBarash/js-lib'
 
 export function bar() {
   return foo(`bar`)
