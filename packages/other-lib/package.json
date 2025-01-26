@@ -1,5 +1,5 @@
 {
-  "name": "@assafBarash/js-lib",
+  "name": "@assafBarash/other-lib",
   "description": "A bare-bones template for shared utilities",
   "version": "0.0.0-development",
   "publishConfig": {
@@ -11,11 +11,6 @@
     "type": "git",
     "url": "git+https://github.com/assafBarash/rb-mono-repo.git"
   },
-  "homepage": "https://github.com/assafBarash/rb-mono-repo/tree/main/packages/js-lib",
-  "license": "MIT",
-  "keywords": [
-    "lib"
-  ],
   "type": "module",
   "main": "dist/index.cjs",
   "browser": "dist/index.umd.cjs",
@@ -42,5 +37,8 @@
     "types": "tsc -d --emitDeclarationOnly --outDir ./dist",
     "lint": "tsc --noEmit && eslint . --cache --cache-location ../../node_modules/.eslint",
     "format": "prettier . --write --cache-location ../../node_modules/.prettier --ignore-path ../../.prettierignore"
+  },
+  "dependencies": {
+    "@assafBarash/js-lib": "^0.0.0-development"
   }
 }

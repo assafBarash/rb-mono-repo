@@ -37,6 +37,8 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "doogu": "^4.1.2",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0",
     "vite-plugin-cachedir": "^1.2.0"
   },
   "config": {
