@@ -9,7 +9,7 @@
   "author": "Your ORG (https://example.com)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/assafBarash/rb-mono-repo.git"
+    "url": "git+https://github.com/assafBarash/rb-mono-repo.git"
   },
   "homepage": "https://github.com/assafBarash/rb-mono-repo/tree/main/packages/js-lib",
   "license": "MIT",
