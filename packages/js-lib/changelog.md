@@ -1,3 +1,10 @@
+## @assafBarash/js-lib [1.1.3](https://github.com/assafBarash/rb-mono-repo/compare/@assafBarash/js-lib@1.1.2...@assafBarash/js-lib@1.1.3) (2025-01-26)
+
+
+### Bug Fixes
+
+* **js-lib:** package.json ([7d0b4ff](https://github.com/assafBarash/rb-mono-repo/commit/7d0b4ff2582db3cac8b27e2788703d514121af72))
+
 ## @assafBarash/js-lib [1.1.2](https://github.com/assafBarash/rb-mono-repo/compare/@assafBarash/js-lib@1.1.1...@assafBarash/js-lib@1.1.2) (2025-01-26)
 
 
