@@ -49,8 +49,5 @@
   "prettier": "doogu/prettier.config.js",
   "release": {
     "extends": "doogu/release.config.js"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
   }
 }
