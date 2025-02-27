@@ -25,10 +25,10 @@ const createDirHandler =
       await fg(
         path.join(
           process.cwd(),
-          !pathStr.endsWith('*') ? path.join(pathStr, '*') : pathStr
+          !pathStr.includes('*') ? path.join(pathStr, '*') : pathStr
         ),
         {
-          absolute: pathStr.includes('*')
+          absolute: true
         }
       )
     ).map((p) => path.basename(p));
