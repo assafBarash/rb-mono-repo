@@ -4,13 +4,12 @@ import { IndexItConfiguration } from './create-index/types';
 
 type Config = { plugins: IndexItConfiguration[] };
 
-export const readConfig = async (): Promise<Config> => {
-  return JSON.parse(
+export const readConfig = async (): Promise<Config> =>
+  JSON.parse(
     (
       await fs.readFile(
-        path.join(process.cwd(), 'index-it.config.json'),
+        path.join(process.cwd(), 'indexiterity.config.json'),
         'utf-8'
       )
     ).toString()
   );
-};

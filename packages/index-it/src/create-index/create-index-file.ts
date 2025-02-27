@@ -67,8 +67,9 @@ const createBuildExportDeclarationParams =
     const name = file.replace('.ts', '');
     return {
       moduleSpecifier: `./${name}`,
-      namedExports: exports.map((name) => ({ name })),
-      namespaceExport: parseByAlias({ alias, name }),
+      ...(alias
+        ? { namespaceExport: parseByAlias({ alias, name }) }
+        : { namedExports: exports.map((name) => ({ name })) }),
       isTypeOnly
     };
   };
