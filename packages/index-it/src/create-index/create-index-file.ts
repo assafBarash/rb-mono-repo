@@ -7,41 +7,45 @@ type Params = IAlias & {
   morph: Project;
   pathStr: string;
   filesExports: FileExportData[];
+  noTypes?: boolean;
 };
 
 export const createIndexFile = async ({
   morph,
   pathStr,
   filesExports,
-  alias
+  ...config
 }: Params) => {
   const indexFilePath = path.join(pathStr, 'index.ts');
   const indexFile = morph.createSourceFile(indexFilePath, '', {
     overwrite: true
   });
 
-  filesExports.forEach(handleFileExports({ indexFile, alias }));
+  filesExports.forEach(handleFileExports({ indexFile, ...config }));
 
   await indexFile.save();
 };
 
 type HandleFileExportsConfig = IAlias & {
   indexFile: SourceFile;
+  noTypes?: boolean;
 };
 export const handleFileExports =
-  ({ indexFile, alias }: HandleFileExportsConfig) =>
+  ({ indexFile, alias, noTypes }: HandleFileExportsConfig) =>
   ({ file, variableExports, typeExports }: FileExportData) => {
     const buildExportDeclarationParams = createBuildExportDeclarationParams({
       file,
       alias
     });
-    indexFile.addExportDeclaration(
-      buildExportDeclarationParams({ exports: variableExports })
-    );
+    if (variableExports.length)
+      indexFile.addExportDeclaration(
+        buildExportDeclarationParams({ exports: variableExports })
+      );
 
-    indexFile.addExportDeclaration(
-      buildExportDeclarationParams({ exports: typeExports, isTypeOnly: true })
-    );
+    if (typeExports.length && !noTypes)
+      indexFile.addExportDeclaration(
+        buildExportDeclarationParams({ exports: typeExports, isTypeOnly: true })
+      );
   };
 
 type ParseByAliasParams = IAlias & {

@@ -2,6 +2,7 @@ import { Project } from 'ts-morph';
 
 export type IndexItConfiguration = {
   alias?: 'camel' | 'kebab' | 'pascal' | 'snake';
+  noTypes?: boolean;
   paths: string[];
 };
 
