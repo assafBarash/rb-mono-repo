@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fg from 'fast-glob';
 import path from 'path';
 import { Project, QuoteKind } from 'ts-morph';
 import { readFilesExports } from './read-files-exports';
@@ -21,7 +21,17 @@ type DirHandlerConfig = Omit<IndexItConfiguration, 'paths'> & {
 
 const createDirHandler =
   (config: DirHandlerConfig) => async (pathStr: string) => {
-    const dir = await fs.readdir(path.join(process.cwd(), pathStr));
+    const dir = (
+      await fg(
+        path.join(
+          process.cwd(),
+          !pathStr.endsWith('*') ? path.join(pathStr, '*') : pathStr
+        ),
+        {
+          absolute: pathStr.includes('*')
+        }
+      )
+    ).map((p) => path.basename(p));
 
     const filesExports = readFilesExports({
       ...config,
