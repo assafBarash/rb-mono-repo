@@ -11,7 +11,9 @@ const main = async () => {
     });
   } catch (err) {
     if ((err as { code?: string })?.code === 'ENOENT') {
-      throw new Error(`## missing index-it.config.json in ${process.cwd()}`);
+      throw new Error(
+        `## missing indexiterity.config.json in ${process.cwd()}`
+      );
     }
 
     throw err;
