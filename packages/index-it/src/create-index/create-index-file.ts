@@ -42,7 +42,7 @@ export const handleFileExports =
         buildExportDeclarationParams({ exports: variableExports })
       );
 
-    if (typeExports.length && !noTypes)
+    if (typeExports.length && !noTypes && !alias)
       indexFile.addExportDeclaration(
         buildExportDeclarationParams({ exports: typeExports, isTypeOnly: true })
       );
