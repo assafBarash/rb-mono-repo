@@ -20,7 +20,7 @@ export const IndexIt = async ({ paths }: IndexItConfiguration) => {
         .forEach((file) => {
           const filePath = path.join(pathStr, file);
           const fileAst = morph.getSourceFile(filePath);
-          const exports = fileAst?.getExportedDeclarations();
+          const exports = Object.keys(fileAst?.getExportedDeclarations() || {});
           console.log('## fileAst', filePath, exports);
         });
 
