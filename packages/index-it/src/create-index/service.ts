@@ -1,30 +1,30 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { Project } from 'ts-morph';
+import { readFilesExports } from './read-files-exports';
+import { IndexItConfiguration } from './types';
+import { createIndexFile } from './create-index-file';
 
-export type IndexItConfiguration = {
-  alias?: string;
-  paths: string[];
-};
-
-export const IndexIt = async ({ paths }: IndexItConfiguration) => {
+export const IndexIt = async ({ paths, ...config }: IndexItConfiguration) => {
   const morph = new Project({
     tsConfigFilePath: path.join(process.cwd(), 'tsconfig.json')
   });
-
-  await Promise.all(
-    paths.map(async (pathStr) => {
-      const dir = await fs.readdir(path.join(process.cwd(), pathStr));
-      dir
-        .filter((file) => file.endsWith('.ts'))
-        .forEach((file) => {
-          const filePath = path.join(pathStr, file);
-          const fileAst = morph.getSourceFile(filePath);
-          const exports = Object.keys(fileAst?.getExportedDeclarations() || {});
-          console.log('## fileAst', filePath, exports);
-        });
-
-      console.log('## dir', dir);
-    })
-  );
+  await Promise.all(paths.map(createDirHandler({ morph, ...config })));
 };
+
+type DirHandlerConfig = Omit<IndexItConfiguration, 'paths'> & {
+  morph: Project;
+};
+
+const createDirHandler =
+  (config: DirHandlerConfig) => async (pathStr: string) => {
+    const dir = await fs.readdir(path.join(process.cwd(), pathStr));
+
+    const filesExports = readFilesExports({
+      ...config,
+      dir,
+      pathStr
+    });
+
+    await createIndexFile({ pathStr, filesExports, ...config });
+  };
