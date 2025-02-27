@@ -2,7 +2,10 @@
   "name": "index-it",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/main.js",
+  "bin": {
+    "index-it": "./dist/main.js"
+  },
   "scripts": {
     "start": "npm run dev",
     "build": "tsc",

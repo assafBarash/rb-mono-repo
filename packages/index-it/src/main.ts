@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { readConfig } from './config';
 import { IndexIt } from './create-index/service';
 
