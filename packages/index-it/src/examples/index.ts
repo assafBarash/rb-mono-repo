@@ -1,2 +1,2 @@
-export { exampleFunction, exampleConstValue, exampleConstMethod, ExampleClass } from "./exports";
-export type { ExampleType, Interface } from "./exports";
+export { exampleFunction, exampleConstValue, exampleConstMethod, ExampleClass } from './exports';
+export type { ExampleType, Interface } from './exports';

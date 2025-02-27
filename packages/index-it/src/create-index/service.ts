@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { Project } from 'ts-morph';
+import { Project, QuoteKind } from 'ts-morph';
 import { readFilesExports } from './read-files-exports';
 import { IndexItConfiguration } from './types';
 import { createIndexFile } from './create-index-file';
@@ -9,6 +9,9 @@ export const IndexIt = async ({ paths, ...config }: IndexItConfiguration) => {
   const morph = new Project({
     tsConfigFilePath: path.join(process.cwd(), 'tsconfig.json')
   });
+
+  morph.manipulationSettings.set({ quoteKind: QuoteKind.Single });
+
   await Promise.all(paths.map(createDirHandler({ morph, ...config })));
 };
 

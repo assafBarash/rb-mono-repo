@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { IndexItConfiguration } from './create-index/service';
+import { IndexItConfiguration } from './create-index/types';
 
 type Config = { plugins: IndexItConfiguration[] };
 
