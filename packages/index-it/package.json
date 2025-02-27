@@ -1,0 +1,29 @@
+{
+  "name": "index-it",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "predev": "npm run build",
+    "pretest": "npm run build",
+    "dev": "node ./dist/main.js",
+    "test": "jest"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.13.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "ts-morph": "^25.0.1"
+  }
+}

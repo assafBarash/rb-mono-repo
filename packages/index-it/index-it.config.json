@@ -1,0 +1,10 @@
+{
+    "plugins": [
+        {
+            "paths": [
+                "./src/examples"
+            ],
+            "alias": null
+        }
+    ]
+}
