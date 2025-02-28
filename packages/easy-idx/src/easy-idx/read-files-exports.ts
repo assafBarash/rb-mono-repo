@@ -1,7 +1,7 @@
 import { Project, SyntaxKind } from 'ts-morph';
 import { FileExportData } from './types';
 import path from 'path';
-import { GENERATE_SIGNATURE } from '../constants';
+import { GENERATE_SIGNATURE } from './constants';
 
 type Params = {
   dir: string[];

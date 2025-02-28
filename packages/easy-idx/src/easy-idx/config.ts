@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { IndexItConfiguration } from './easy-idx/types';
+import { IndexItConfiguration } from './types';
 import { CONFIG_FILE } from './constants';
 
 type Config = { plugins: IndexItConfiguration[] };

@@ -2,7 +2,7 @@ import path from 'path';
 import { Project, SourceFile } from 'ts-morph';
 import { FileExportData, IAlias } from './types';
 import mcgill from 'mcgill';
-import { GENERATE_SIGNATURE } from '../constants';
+import { GENERATE_SIGNATURE } from './constants';
 
 type Params = IAlias & {
   morph: Project;
