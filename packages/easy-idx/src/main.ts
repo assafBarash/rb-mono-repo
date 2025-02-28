@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 import { readConfig } from './easy-idx/config';
-import { IndexIt } from './easy-idx/service';
+import { EasyIdx } from './easy-idx/service';
 
 const main = async () => {
   try {
     const { plugins } = await readConfig();
     plugins.forEach(async (config) => {
-      await IndexIt(config);
+      await EasyIdx(config);
     });
   } catch (err) {
     if ((err as { code?: string })?.code === 'ENOENT') {

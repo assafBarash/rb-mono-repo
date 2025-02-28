@@ -5,7 +5,7 @@ import { readFilesExports } from './read-files-exports';
 import { DirHandlerConfig, IndexItConfiguration } from './types';
 import { createIndexFile } from './create-index-file';
 
-export const IndexIt = async ({ paths, ...config }: IndexItConfiguration) => {
+export const EasyIdx = async ({ paths, ...config }: IndexItConfiguration) => {
   const morph = new Project({
     tsConfigFilePath: path.join(process.cwd(), 'tsconfig.json')
   });
