@@ -2,6 +2,7 @@ import path from 'path';
 import { Project, SourceFile } from 'ts-morph';
 import { FileExportData, IAlias } from './types';
 import mcgill from 'mcgill';
+import { GENERATE_SIGNATURE } from '../constants';
 
 type Params = IAlias & {
   morph: Project;
@@ -21,7 +22,7 @@ export const createIndexFile = async ({
     overwrite: true
   });
 
-  indexFile.insertText(0, '/** Auto-Generated */\n\n');
+  indexFile.insertText(0, `${GENERATE_SIGNATURE}\n\n`);
 
   filesExports.forEach(handleFileExports({ indexFile, ...config }));
 

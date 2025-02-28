@@ -1,6 +1,7 @@
 import { Project, SyntaxKind } from 'ts-morph';
 import { FileExportData } from './types';
 import path from 'path';
+import { GENERATE_SIGNATURE } from '../constants';
 
 type Params = {
   dir: string[];
@@ -36,7 +37,7 @@ const readFileExports =
 
     console.log('## fileAst', { fileAst: fileAst.getText() });
 
-    if (fileAst.getText().includes('/** Auto-Generated */')) return [];
+    if (fileAst.getText().includes(GENERATE_SIGNATURE)) return [];
 
     const exports = fileAst.getExportedDeclarations();
 
