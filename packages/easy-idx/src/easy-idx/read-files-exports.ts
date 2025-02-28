@@ -11,7 +11,9 @@ type Params = {
 export const readFilesExports = ({ dir, ...config }: Params) =>
   Object.values(
     dir
-      .filter((file) => file.endsWith('.ts') && file !== 'index.ts') // Ignore index.ts
+      .map((file) =>
+        file.endsWith('.ts') ? file : path.join(file, 'index.ts')
+      )
       .flatMap(readFileExports(config))
       .reduce(aggregateExports, {})
   ).reduce(aggregateByIndexFiles, {});
@@ -32,12 +34,9 @@ type RawExportData = {
 const readFileExports =
   ({ morph }: ReactExportsConfig) =>
   (file: string): RawExportData[] => {
-    const filePath = file;
-    const fileAst = morph.addSourceFileAtPath(filePath);
+    const fileAst = morph.addSourceFileAtPath(file);
 
-    console.log('## fileAst', { fileAst: fileAst.getText() });
-
-    if (fileAst.getText().includes(GENERATE_SIGNATURE)) return [];
+    if (fileAst.getFullText().includes(GENERATE_SIGNATURE)) return [];
 
     const exports = fileAst.getExportedDeclarations();
 
@@ -72,11 +71,21 @@ const aggregateByIndexFiles = (
   acc: Record<string, FileExportData[]>,
   { file, ...fileExportData }: FileExportData
 ) => {
-  const fileDir = path.dirname(file);
-  const name = path.basename(file);
+  const fileDir = parseDirname(file);
+  const name = parseName(file);
 
   return {
     ...acc,
     [fileDir]: [{ file: name, ...fileExportData }, ...(acc[fileDir] || [])]
   };
 };
+
+const parseName = (file: string) =>
+  file.endsWith('index.ts')
+    ? path.basename(`${path.dirname(file)}.ts`)
+    : path.basename(file);
+
+const parseDirname = (file: string) =>
+  file.endsWith('index.ts')
+    ? path.dirname(`${path.dirname(file)}.ts`)
+    : path.dirname(file);

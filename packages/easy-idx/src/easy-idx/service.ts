@@ -21,7 +21,7 @@ type DirHandlerConfig = Omit<IndexItConfiguration, 'paths'> & {
 
 const createDirHandler =
   (config: DirHandlerConfig) => async (pathStr: string) => {
-    const dir = await fg(path.join(process.cwd(), pathStr), {});
+    const dir = await readDir(pathStr);
 
     const filesExports = readFilesExports({
       ...config,
@@ -34,3 +34,16 @@ const createDirHandler =
       )
     );
   };
+
+const readDir = async (pathStr: string) => {
+  const dir = await fg(path.join(process.cwd(), pathStr), {});
+
+  const deepIndexes = pathStr.endsWith('*.ts')
+    ? await fg(
+        path.join(process.cwd(), pathStr.replace('*.ts', '*/index.ts')),
+        {}
+      )
+    : [];
+
+  return [...dir, ...deepIndexes];
+};

@@ -2,7 +2,7 @@
     "plugins": [
         {
             "paths": [
-                "./**/examples/**/*.ts"
+                "./**/examples/*.ts"
             ],
             "alias": null
         }
