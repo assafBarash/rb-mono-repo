@@ -1,11 +1,9 @@
-import path from 'path';
 import { Project, SyntaxKind } from 'ts-morph';
 import { FileExportData } from './types';
 
 type Params = {
   dir: string[];
   morph: Project;
-  pathStr: string;
 };
 
 export const readFilesExports = ({ dir, ...config }: Params) =>
@@ -23,7 +21,6 @@ const tsKinds = [
 
 type ReactExportsConfig = {
   morph: Project;
-  pathStr: string;
 };
 type RawExportData = {
   label: string;
@@ -31,9 +28,9 @@ type RawExportData = {
   file: string;
 };
 const readFileExports =
-  ({ morph, pathStr }: ReactExportsConfig) =>
+  ({ morph }: ReactExportsConfig) =>
   (file: string): RawExportData[] => {
-    const filePath = path.join(pathStr, file);
+    const filePath = file;
     const fileAst = morph.addSourceFileAtPath(filePath);
     const exports = fileAst.getExportedDeclarations();
 

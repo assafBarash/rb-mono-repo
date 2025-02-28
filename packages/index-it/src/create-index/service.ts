@@ -21,22 +21,11 @@ type DirHandlerConfig = Omit<IndexItConfiguration, 'paths'> & {
 
 const createDirHandler =
   (config: DirHandlerConfig) => async (pathStr: string) => {
-    const dir = (
-      await fg(
-        path.join(
-          process.cwd(),
-          !pathStr.includes('*') ? path.join(pathStr, '*') : pathStr
-        ),
-        {
-          absolute: true
-        }
-      )
-    ).map((p) => path.basename(p));
+    const dir = await fg(path.join(process.cwd(), pathStr), {});
 
     const filesExports = readFilesExports({
       ...config,
-      dir,
-      pathStr
+      dir
     });
 
     await createIndexFile({ pathStr, filesExports, ...config });

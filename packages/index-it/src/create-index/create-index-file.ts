@@ -21,7 +21,7 @@ export const createIndexFile = async ({
     overwrite: true
   });
 
-  filesExports.forEach(handleFileExports({ indexFile, ...config }));
+  filesExports.forEach(handleFileExports({ indexFile, pathStr, ...config }));
 
   await indexFile.save();
 };
@@ -29,13 +29,15 @@ export const createIndexFile = async ({
 type HandleFileExportsConfig = IAlias & {
   indexFile: SourceFile;
   noTypes?: boolean;
+  pathStr: string;
 };
 export const handleFileExports =
-  ({ indexFile, alias, noTypes }: HandleFileExportsConfig) =>
+  ({ indexFile, alias, noTypes, pathStr }: HandleFileExportsConfig) =>
   ({ file, variableExports, typeExports }: FileExportData) => {
     const buildExportDeclarationParams = createBuildExportDeclarationParams({
       file,
-      alias
+      alias,
+      pathStr
     });
     if (variableExports.length)
       indexFile.addExportDeclaration(
@@ -55,16 +57,23 @@ const parseByAlias = ({ alias, name }: ParseByAliasParams) =>
   alias ? mcgill(name).to[alias]() : undefined;
 
 type DeclarationBuilder = {
-  config: IAlias & { file: string };
+  config: IAlias & { file: string; pathStr: string };
   params: {
     exports: string[];
     isTypeOnly?: boolean;
   };
 };
 const createBuildExportDeclarationParams =
-  ({ file, alias }: DeclarationBuilder['config']) =>
+  ({ file, alias, pathStr }: DeclarationBuilder['config']) =>
   ({ exports, isTypeOnly }: DeclarationBuilder['params']) => {
-    const name = file.replace('.ts', '');
+    const name = file
+      .replace('.ts', '')
+      .replace(pathStr, '::::')
+      .split('::::')
+      .pop();
+
+    console.log('## DEBUG', { name, file, pathStr });
+
     return {
       moduleSpecifier: `./${name}`,
       ...(alias
