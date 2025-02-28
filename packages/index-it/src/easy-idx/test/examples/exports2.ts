@@ -1,5 +1,5 @@
 // export const exampleConstValue = 5;
-export const exampleConstMethod = (p: ShouldNotExport) => {
+export const exampleConstMethod2 = (p: ShouldNotExport) => {
   console.log(p);
 };
 
@@ -11,7 +11,4 @@ export const exampleConstMethod = (p: ShouldNotExport) => {
 //   a: ExampleType;
 // }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ShouldNotExport = { a: string };
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const shouldNotExport = 5;

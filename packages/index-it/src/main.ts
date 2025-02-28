@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { readConfig } from './config';
-import { IndexIt } from './create-index/service';
+import { IndexIt } from './easy-idx/service';
 
 const main = async () => {
   try {

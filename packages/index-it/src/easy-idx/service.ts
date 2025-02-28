@@ -28,5 +28,9 @@ const createDirHandler =
       dir
     });
 
-    await createIndexFile({ pathStr, filesExports, ...config });
+    await Promise.all(
+      Object.entries(filesExports).map(([indexDir, filesExports]) =>
+        createIndexFile({ indexDir, filesExports, ...config })
+      )
+    );
   };

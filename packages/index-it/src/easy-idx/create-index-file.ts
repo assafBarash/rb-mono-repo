@@ -5,23 +5,25 @@ import mcgill from 'mcgill';
 
 type Params = IAlias & {
   morph: Project;
-  pathStr: string;
   filesExports: FileExportData[];
   noTypes?: boolean;
+  indexDir: string;
 };
 
 export const createIndexFile = async ({
   morph,
-  pathStr,
+  indexDir,
   filesExports,
   ...config
 }: Params) => {
-  const indexFilePath = path.join(pathStr, 'index.ts');
+  const indexFilePath = path.join(indexDir, 'index.ts');
   const indexFile = morph.createSourceFile(indexFilePath, '', {
     overwrite: true
   });
 
-  filesExports.forEach(handleFileExports({ indexFile, pathStr, ...config }));
+  indexFile.insertText(0, '/** Auto-Generated */\n\n');
+
+  filesExports.forEach(handleFileExports({ indexFile, ...config }));
 
   await indexFile.save();
 };
@@ -29,15 +31,13 @@ export const createIndexFile = async ({
 type HandleFileExportsConfig = IAlias & {
   indexFile: SourceFile;
   noTypes?: boolean;
-  pathStr: string;
 };
 export const handleFileExports =
-  ({ indexFile, alias, noTypes, pathStr }: HandleFileExportsConfig) =>
+  ({ indexFile, alias, noTypes }: HandleFileExportsConfig) =>
   ({ file, variableExports, typeExports }: FileExportData) => {
     const buildExportDeclarationParams = createBuildExportDeclarationParams({
       file,
-      alias,
-      pathStr
+      alias
     });
     if (variableExports.length)
       indexFile.addExportDeclaration(
@@ -57,22 +57,16 @@ const parseByAlias = ({ alias, name }: ParseByAliasParams) =>
   alias ? mcgill(name).to[alias]() : undefined;
 
 type DeclarationBuilder = {
-  config: IAlias & { file: string; pathStr: string };
+  config: IAlias & { file: string };
   params: {
     exports: string[];
     isTypeOnly?: boolean;
   };
 };
 const createBuildExportDeclarationParams =
-  ({ file, alias, pathStr }: DeclarationBuilder['config']) =>
+  ({ file, alias }: DeclarationBuilder['config']) =>
   ({ exports, isTypeOnly }: DeclarationBuilder['params']) => {
-    const name = file
-      .replace('.ts', '')
-      .replace(pathStr, '::::')
-      .split('::::')
-      .pop();
-
-    console.log('## DEBUG', { name, file, pathStr });
+    const name = path.basename(file).replace('.ts', '');
 
     return {
       moduleSpecifier: `./${name}`,

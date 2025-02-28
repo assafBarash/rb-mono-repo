@@ -1,5 +1,6 @@
 import { Project, SyntaxKind } from 'ts-morph';
 import { FileExportData } from './types';
+import path from 'path';
 
 type Params = {
   dir: string[];
@@ -12,7 +13,7 @@ export const readFilesExports = ({ dir, ...config }: Params) =>
       .filter((file) => file.endsWith('.ts') && file !== 'index.ts') // Ignore index.ts
       .flatMap(readFileExports(config))
       .reduce(aggregateExports, {})
-  );
+  ).reduce(aggregateByIndexFiles, {});
 
 const tsKinds = [
   SyntaxKind.TypeAliasDeclaration,
@@ -32,6 +33,11 @@ const readFileExports =
   (file: string): RawExportData[] => {
     const filePath = file;
     const fileAst = morph.addSourceFileAtPath(filePath);
+
+    console.log('## fileAst', { fileAst: fileAst.getText() });
+
+    if (fileAst.getText().includes('/** Auto-Generated */')) return [];
+
     const exports = fileAst.getExportedDeclarations();
 
     return Array.from(exports.entries()).flatMap(([label, declarations]) =>
@@ -58,5 +64,18 @@ const aggregateExports = (
   return {
     ...acc,
     [file]: data
+  };
+};
+
+const aggregateByIndexFiles = (
+  acc: Record<string, FileExportData[]>,
+  { file, ...fileExportData }: FileExportData
+) => {
+  const fileDir = path.dirname(file);
+  const name = path.basename(file);
+
+  return {
+    ...acc,
+    [fileDir]: [{ file: name, ...fileExportData }, ...(acc[fileDir] || [])]
   };
 };
