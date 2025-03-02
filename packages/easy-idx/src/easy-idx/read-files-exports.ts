@@ -9,23 +9,15 @@ type Params = {
   exportFile?: string;
 };
 
-export const readFilesExports = ({
-  dir,
-  exportFile = 'index',
-  ...config
-}: Params) =>
+export const readFilesExports = ({ dir, exportFile, ...config }: Params) =>
   Object.values(
     dir
-      .map((file) => {
-        console.log('## GG', { file, exportFile });
-
-        return file.endsWith('.ts')
-          ? file
-          : path.join(file, `${exportFile}.ts`);
-      })
+      .map((file) =>
+        file.endsWith('.ts') ? file : path.join(file, `index.ts`)
+      )
       .flatMap(readFileExports(config))
       .reduce(aggregateExports, {})
-  ).reduce(aggregateByIndexFiles, {});
+  ).reduce(aggregateByIndexFiles(exportFile), {});
 
 const tsKinds = [
   SyntaxKind.TypeAliasDeclaration,
@@ -76,25 +68,39 @@ const aggregateExports = (
   };
 };
 
-const aggregateByIndexFiles = (
-  acc: Record<string, FileExportData[]>,
-  { file, ...fileExportData }: FileExportData
-) => {
-  const fileDir = parseDirname(file);
-  const name = parseName(file);
+const aggregateByIndexFiles =
+  (exportFile?: string) =>
+  (
+    acc: Record<string, FileExportData[]>,
+    { file, ...fileExportData }: FileExportData
+  ) => {
+    const fileDir = parseDirname({ file, exportFile });
+    const name = parseName({ file, exportFile });
 
-  return {
-    ...acc,
-    [fileDir]: [{ file: name, ...fileExportData }, ...(acc[fileDir] || [])]
+    return {
+      ...acc,
+      [fileDir]: [{ file: name, ...fileExportData }, ...(acc[fileDir] || [])]
+    };
   };
+
+type ParseDirParams = {
+  file: string;
+  exportFile?: string;
 };
 
-const parseName = (file: string) =>
-  file.endsWith('index.ts')
-    ? path.basename(`${path.dirname(file)}.ts`)
-    : path.basename(file);
+const parseName = ({ file, exportFile }: ParseDirParams) => {
+  const name =
+    file.endsWith('index.ts') || file.endsWith(`${exportFile}.ts`)
+      ? path.basename(`${path.dirname(file)}.ts`)
+      : path.basename(file);
 
-const parseDirname = (file: string) =>
-  file.endsWith('index.ts')
+  return exportFile ? `${exportFile}/${name}` : name;
+};
+
+const parseDirname = ({ file, exportFile }: ParseDirParams) => {
+  const dirname = file.endsWith('index.ts')
     ? path.dirname(`${path.dirname(file)}.ts`)
     : path.dirname(file);
+
+  return exportFile ? path.dirname(dirname) : dirname;
+};

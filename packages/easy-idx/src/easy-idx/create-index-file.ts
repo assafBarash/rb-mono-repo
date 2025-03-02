@@ -10,6 +10,7 @@ type Params = IAlias & {
   filesExports: FileExportData[];
   noTypes?: boolean;
   indexDir: string;
+  exportFile?: string;
 };
 
 export const createIndexFile = async ({
@@ -37,15 +38,18 @@ export const createIndexFile = async ({
   await indexFile.save();
 };
 
-type HandleFileExportsConfig = IAlias & {
+type HandleFileExportsConfig = Omit<
+  Params,
+  'morph' | 'filesExports' | 'indexDir'
+> & {
   indexFile: SourceFile;
-  noTypes?: boolean;
 };
 export const handleFileExports =
-  ({ indexFile, alias, noTypes }: HandleFileExportsConfig) =>
+  ({ indexFile, alias, noTypes, exportFile }: HandleFileExportsConfig) =>
   ({ file, variableExports, typeExports }: FileExportData) => {
     const buildExportDeclarationParams = createBuildExportDeclarationParams({
       file,
+      exportFile,
       alias
     });
     if (variableExports.length)
@@ -66,19 +70,19 @@ const parseByAlias = ({ alias, name }: ParseByAliasParams) =>
   alias ? mcgill(name).to[alias]() : undefined;
 
 type DeclarationBuilder = {
-  config: IAlias & { file: string };
+  config: IAlias & { file: string; exportFile?: string };
   params: {
     exports: string[];
     isTypeOnly?: boolean;
   };
 };
 const createBuildExportDeclarationParams =
-  ({ file, alias }: DeclarationBuilder['config']) =>
+  ({ file, alias, exportFile }: DeclarationBuilder['config']) =>
   ({ exports, isTypeOnly }: DeclarationBuilder['params']) => {
     const name = path.basename(file).replace('.ts', '');
 
     return {
-      moduleSpecifier: `./${name}`,
+      moduleSpecifier: `./${name}${exportFile ? `/${exportFile}` : ''}`,
       ...(alias
         ? { namespaceExport: parseByAlias({ alias, name }) }
         : { namedExports: exports.sort().map((name) => ({ name })) }),

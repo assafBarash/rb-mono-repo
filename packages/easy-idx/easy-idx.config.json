@@ -2,7 +2,7 @@
     "plugins": [
         {
             "paths": [
-                "./**/services/**"
+                "./**/services/*/service.ts"
             ],
             "alias": null,
             "exportFile": "service"
