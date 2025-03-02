@@ -35,10 +35,7 @@ const readDir = async (pathStr: string) => {
   const dir = await fg(path.join(process.cwd(), pathStr), {});
 
   const deepIndexes = pathStr.endsWith('*.ts')
-    ? await fg(
-        path.join(process.cwd(), pathStr.replace('*.ts', '*/index.ts')),
-        {}
-      )
+    ? await fg(path.join(process.cwd(), pathStr.replace('*.ts', '*/index.ts')))
     : [];
 
   return [...dir, ...deepIndexes];
