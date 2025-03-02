@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs/promises';
 import { Project, SourceFile } from 'ts-morph';
 import { FileExportData, IAlias } from './types';
 import mcgill from 'mcgill';
@@ -18,6 +19,13 @@ export const createIndexFile = async ({
   ...config
 }: Params) => {
   const indexFilePath = path.join(indexDir, 'index.ts');
+  const existingIndex = await fs
+    .readFile(indexFilePath, 'utf-8')
+    .catch(() => '');
+
+  if (existingIndex && !existingIndex.includes(GENERATE_SIGNATURE))
+    throw new Error(`existing_index::${indexFilePath}`);
+
   const indexFile = morph.createSourceFile(indexFilePath, '', {
     overwrite: true
   });
@@ -73,7 +81,7 @@ const createBuildExportDeclarationParams =
       moduleSpecifier: `./${name}`,
       ...(alias
         ? { namespaceExport: parseByAlias({ alias, name }) }
-        : { namedExports: exports.map((name) => ({ name })) }),
+        : { namedExports: exports.sort().map((name) => ({ name })) }),
       isTypeOnly
     };
   };

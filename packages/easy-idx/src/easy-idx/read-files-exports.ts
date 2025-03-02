@@ -6,14 +6,23 @@ import { GENERATE_SIGNATURE } from './constants';
 type Params = {
   dir: string[];
   morph: Project;
+  exportFile?: string;
 };
 
-export const readFilesExports = ({ dir, ...config }: Params) =>
+export const readFilesExports = ({
+  dir,
+  exportFile = 'index',
+  ...config
+}: Params) =>
   Object.values(
     dir
-      .map((file) =>
-        file.endsWith('.ts') ? file : path.join(file, 'index.ts')
-      )
+      .map((file) => {
+        console.log('## GG', { file, exportFile });
+
+        return file.endsWith('.ts')
+          ? file
+          : path.join(file, `${exportFile}.ts`);
+      })
       .flatMap(readFileExports(config))
       .reduce(aggregateExports, {})
   ).reduce(aggregateByIndexFiles, {});
