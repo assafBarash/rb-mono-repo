@@ -4,8 +4,6 @@ import { readConfig } from './easy-idx/config';
 import { EasyIdx } from './easy-idx/service';
 
 const main = async () => {
-  console.log('## Start');
-
   try {
     const { plugins } = await readConfig();
     plugins.forEach(async (config) => {
@@ -20,10 +18,8 @@ const main = async () => {
 
     throw err;
   }
-
-  console.log('## End');
 };
 
 main().catch((err) => {
-  console.log('## Failed', err);
+  throw err;
 });

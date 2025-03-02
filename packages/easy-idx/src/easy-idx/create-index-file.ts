@@ -33,7 +33,9 @@ export const createIndexFile = async ({
 
   indexFile.insertText(0, `${GENERATE_SIGNATURE}\n\n`);
 
-  filesExports.forEach(handleFileExports({ indexFile, ...config }));
+  filesExports
+    .sort((a, b) => a.file.localeCompare(b.file))
+    .forEach(handleFileExports({ indexFile, ...config }));
 
   await indexFile.save();
 };
