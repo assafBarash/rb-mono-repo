@@ -31,12 +31,12 @@ const createDirHandler =
     );
   };
 
-const readDir = async (pathStr: string) => {
-  const dir = await fg(path.join(process.cwd(), pathStr), {});
-
-  const deepIndexes = pathStr.endsWith('*.ts')
-    ? await fg(path.join(process.cwd(), pathStr.replace('*.ts', '*/index.ts')))
-    : [];
-
-  return [...dir, ...deepIndexes];
-};
+const readDir = async (pathStr: string) =>
+  (
+    await Promise.all([
+      fg(path.join(process.cwd(), pathStr), {}),
+      pathStr.endsWith('*.ts')
+        ? fg(path.join(process.cwd(), pathStr.replace('*.ts', '*/index.ts')))
+        : []
+    ])
+  ).flat();
