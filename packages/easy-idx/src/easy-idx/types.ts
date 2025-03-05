@@ -1,10 +1,10 @@
 import { Project } from 'ts-morph';
 
 export type IndexItConfiguration = {
+  paths: string[];
   alias?: 'camel' | 'kebab' | 'pascal' | 'snake';
   exportFile?: string;
   noTypes?: boolean;
-  paths: string[];
 };
 
 export type DirHandlerConfig = Omit<IndexItConfiguration, 'paths'> & {

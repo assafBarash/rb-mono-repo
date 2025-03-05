@@ -5,14 +5,18 @@ import { readFilesExports } from './read-files-exports';
 import { DirHandlerConfig, IndexItConfiguration } from './types';
 import { createIndexFile } from './create-index-file';
 
-export const EasyIdx = async ({ paths, ...config }: IndexItConfiguration) => {
+export const EasyIdx = (config: Omit<IndexItConfiguration, 'paths'>) => {
   const morph = new Project({
     tsConfigFilePath: path.join(process.cwd(), 'tsconfig.json')
   });
 
   morph.manipulationSettings.set({ quoteKind: QuoteKind.Single });
 
-  await Promise.all(paths.map(createDirHandler({ morph, ...config })));
+  const createPathExportsIndex = createDirHandler({ morph, ...config });
+
+  return {
+    createPathExportsIndex
+  };
 };
 
 const createDirHandler =

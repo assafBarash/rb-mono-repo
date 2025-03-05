@@ -6,9 +6,12 @@ import { EasyIdx } from './easy-idx/service';
 const main = async () => {
   try {
     const { plugins } = await readConfig();
-    plugins.forEach(async (config) => {
-      await EasyIdx(config);
-    });
+    await Promise.all(
+      plugins.flatMap(async ({ paths = [], ...config }) => {
+        const easyIdx = EasyIdx(config);
+        paths.map(easyIdx.createPathExportsIndex);
+      })
+    );
   } catch (err) {
     if ((err as { code?: string })?.code === 'ENOENT') {
       throw new Error(
