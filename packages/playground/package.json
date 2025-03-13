@@ -24,6 +24,7 @@
     "@ericcornelissen/bash-parser": "^0.5.3",
     "@sinclair/typebox": "^0.34.28",
     "bash-parser": "^0.5.0",
+    "fp-ts": "^2.16.9",
     "type-fest": "^4.33.0"
   },
   "jest": {
