@@ -11,15 +11,17 @@ type Params = IAlias & {
   noTypes?: boolean;
   indexDir: string;
   exportFile?: string;
+  customName?: string;
 };
 
 export const createIndexFile = async ({
   morph,
   indexDir,
   filesExports,
+  customName = 'index',
   ...config
 }: Params) => {
-  const indexFilePath = path.join(indexDir, 'index.ts');
+  const indexFilePath = path.join(indexDir, `${customName}.ts`);
   const existingIndex = await fs
     .readFile(indexFilePath, 'utf-8')
     .catch(() => '');

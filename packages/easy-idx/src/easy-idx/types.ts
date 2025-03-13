@@ -5,6 +5,7 @@ export type IndexItConfiguration = {
   alias?: 'camel' | 'kebab' | 'pascal' | 'snake';
   exportFile?: string;
   noTypes?: boolean;
+  customName?: string;
 };
 
 export type DirHandlerConfig = Omit<IndexItConfiguration, 'paths'> & {

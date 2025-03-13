@@ -5,7 +5,8 @@
                 "./**/services/*/service.ts"
             ],
             "alias": null,
-            "exportFile": "service"
+            "exportFile": "service",
+            "customName": "some-name"
         }
     ]
 }
