@@ -13,7 +13,7 @@ export type SimpleTableProps<Row> = {
 }
 
 export const SimpleTable = <Row,>({
-  structure,
+  structure = {},
   rows,
   columns
 }: SimpleTableProps<Row>) => (

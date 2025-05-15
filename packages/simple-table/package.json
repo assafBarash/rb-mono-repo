@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "description": "A tiny React component",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js"
+  },
   "files": [
     "dist"
   ],
@@ -10,9 +15,9 @@
     "build": "tsup",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {
-    "react": "^19.1.4",
-    "react-dom": "^19.1.5"
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
   },
   "devDependencies": {
     "@types/react": "^19.1.4",

@@ -6,11 +6,11 @@ export const TableBody = () => {
   const { rows, columns } = useTableProvider()
   const { Row, Cell } = structure.body
 
-  return (
+  return rows.map((row, idx) => (
     <Row>
-      {rows.map((row, idx) => (
-        <Cell key={idx}>{columns.map(column => column.renderBody(row))}</Cell>
+      {columns.map(column => (
+        <Cell key={idx}>{column.renderBody(row)}</Cell>
       ))}
     </Row>
-  )
+  ))
 }
