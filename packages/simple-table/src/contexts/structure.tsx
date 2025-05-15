@@ -3,7 +3,7 @@ import deepmerge from 'deepmerge'
 import { DeepPartial } from '../utils/deep-partial'
 
 export type Structure = {
-  Wrapper: StructureComponent
+  Container: StructureComponent
   head: TableItemStructure
   body: TableItemStructure
   foot: TableItemStructure
@@ -12,23 +12,27 @@ export type Structure = {
 type TableItemStructure = {
   Row: StructureComponent
   Cell: StructureComponent
+  Container: StructureComponent
 }
 
 type StructureComponent = (props: PropsWithChildren) => ReactNode
 
 const defaultStructure: Structure = {
-  Wrapper: ({ children }) => <table>{children}</table>,
+  Container: ({ children }) => <table>{children}</table>,
   head: {
     Row: ({ children }) => <tr>{children}</tr>,
-    Cell: ({ children }) => <th scope='col'>{children}</th>
+    Cell: ({ children }) => <th scope='col'>{children}</th>,
+    Container: ({ children }) => <thead>{children}</thead>
   },
   body: {
     Row: ({ children }) => <tr>{children}</tr>,
-    Cell: ({ children }) => <td>{children}</td>
+    Cell: ({ children }) => <td>{children}</td>,
+    Container: ({ children }) => <tbody>{children}</tbody>
   },
   foot: {
     Row: ({ children }) => <tr>{children}</tr>,
-    Cell: ({ children }) => <td>{children}</td>
+    Cell: ({ children }) => <td>{children}</td>,
+    Container: ({ children }) => <tfoot>{children}</tfoot>
   }
 }
 

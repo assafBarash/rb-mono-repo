@@ -4,13 +4,15 @@ import { useTableProvider } from '../contexts/table'
 export const TableHead = () => {
   const structure = useStructureProvider()
   const { columns } = useTableProvider()
-  const { Row, Cell } = structure.head
+  const { Row, Cell, Container } = structure.head
 
   return (
-    <Row>
-      {columns.map((column, idx) => (
-        <Cell key={idx}>{column.renderHead()}</Cell>
-      ))}
-    </Row>
+    <Container>
+      <Row>
+        {columns.map((column, idx) => (
+          <Cell key={idx}>{column.renderHead()}</Cell>
+        ))}
+      </Row>
+    </Container>
   )
 }
