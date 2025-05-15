@@ -1,6 +1,6 @@
 {
-  "name": "simple-table",
-  "version": "0.1.0",
+  "name": "react-simple-table",
+  "version": "0.0.1",
   "description": "A tiny React component",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
