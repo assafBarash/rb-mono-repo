@@ -1,3 +1,1 @@
-export const SimpleTable = () => {
-  return <div>Simple Table</div>
-}
+export * from './simple-table'
