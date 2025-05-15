@@ -1,0 +1,24 @@
+{
+  "name": "simple-table",
+  "version": "0.1.0",
+  "description": "A tiny React component",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "react": "^19.1.4",
+    "react-dom": "^19.1.5"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3"
+  },
+  "license": "MIT"
+}
