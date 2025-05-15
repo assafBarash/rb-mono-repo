@@ -1,12 +1,16 @@
 import { createContext, PropsWithChildren, ReactNode, useContext } from 'react'
+import { useColumnDefaultRenderers } from './column-render'
 
 const context = createContext({
   rows: []
 })
 
+export type TableColumn<Row> = Pick<Column<Row>, 'id'> &
+  Partial<Omit<Column<Row>, 'id'>>
+
 type TableContext<Row> = {
   rows: Row[]
-  columns?: Column<Row>[]
+  columns?: TableColumn<Row>[]
 }
 
 export const useTableProvider = <Row,>() =>
@@ -14,22 +18,21 @@ export const useTableProvider = <Row,>() =>
 
 export const TableProvider = <Row,>({
   children,
-  ...ctx
+  ...props
 }: PropsWithChildren<TableContext<Row>>) => {
-  return (
-    <context.Provider value={buildContext<Row>(ctx)}>
-      {children}
-    </context.Provider>
-  )
+  const ctx = useBuildContext<Row>(props)
+  return <context.Provider value={ctx}>{children}</context.Provider>
 }
 
 export type Column<Row> = {
+  id: string
   renderHead: () => ReactNode
   renderBody: (row: Row) => ReactNode
   renderFoot: (rows: Row[]) => ReactNode
 }
 
-const buildContext = <R,>(ctx: TableContext<R>): TableContext<R> => {
+const useBuildContext = <R,>(ctx: TableContext<R>): TableContext<R> => {
+  const defaultRenderer = useColumnDefaultRenderers<R>()
   const { rows, columns } = ctx
   if (columns) return ctx
 
@@ -41,13 +44,6 @@ const buildContext = <R,>(ctx: TableContext<R>): TableContext<R> => {
 
   return {
     rows,
-    columns: keys.map(
-      key =>
-        ({
-          renderHead: () => key,
-          renderBody: (row: R) => row[key],
-          renderFoot: () => null
-        }) as Column<R>
-    )
+    columns: keys.map(defaultRenderer)
   }
 }
