@@ -1,5 +1,5 @@
 import { Structure, StructureProvider } from '../contexts/structure'
-import { Column, TableColumn, TableProvider } from '../contexts/table'
+import { TableColumn, TableProvider } from '../contexts/table'
 import { DeepPartial } from '../utils/deep-partial'
 import { TableHead } from './head'
 import { TableBody } from './body'

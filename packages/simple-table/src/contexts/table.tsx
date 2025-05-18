@@ -1,5 +1,5 @@
-import { createContext, PropsWithChildren, ReactNode, useContext } from 'react'
-import { useColumnDefaultRenderers } from './column-render'
+import { createContext, PropsWithChildren, useContext, useState } from 'react'
+import { Column, useColumnDefaultRenderers } from './column-render'
 
 const context = createContext({
   rows: []
@@ -8,33 +8,32 @@ const context = createContext({
 export type TableColumn<Row> = Pick<Column<Row>, 'id'> &
   Partial<Omit<Column<Row>, 'id'>>
 
-type TableContext<Row> = {
+type PublicTableContext<Row> = {
   rows: Row[]
   columns?: TableColumn<Row>[]
 }
 
+type PrivateTableContext<Row> = PublicTableContext<Row> & {
+  expendedStore: ExpendedRowsStore
+}
+
 export const useTableProvider = <Row,>() =>
-  useContext<TableContext<Row>>(context)
+  useContext<PrivateTableContext<Row>>(context)
 
 export const TableProvider = <Row,>({
   children,
   ...props
-}: PropsWithChildren<TableContext<Row>>) => {
+}: PropsWithChildren<PublicTableContext<Row>>) => {
   const ctx = useBuildContext<Row>(props)
   return <context.Provider value={ctx}>{children}</context.Provider>
 }
 
-export type Column<Row> = {
-  id: string
-  renderHead: () => ReactNode
-  renderBody: (row: Row) => ReactNode
-  renderFoot: (rows: Row[]) => ReactNode
-}
-
-const useBuildContext = <R,>(ctx: TableContext<R>): TableContext<R> => {
+const useBuildContext = <R,>(
+  ctx: PublicTableContext<R>
+): PrivateTableContext<R> => {
   const defaultRenderer = useColumnDefaultRenderers<R>()
+  const expendedStore = useExpendedRowsStore()
   const { rows, columns } = ctx
-  if (columns) return ctx
 
   const keys = rows
     .flatMap(row => Object.keys(row))
@@ -44,6 +43,17 @@ const useBuildContext = <R,>(ctx: TableContext<R>): TableContext<R> => {
 
   return {
     rows,
-    columns: keys.map(defaultRenderer)
+    columns: columns || keys.map(defaultRenderer),
+    expendedStore
   }
+}
+
+type ExpendedRowsStore = {
+  rowsIndexes: number[]
+  setRowsIndexes: (indexes: number[]) => void
+}
+
+const useExpendedRowsStore = (): ExpendedRowsStore => {
+  const [rowsIndexes, setRowsIndexes] = useState<number[]>([])
+  return { rowsIndexes, setRowsIndexes }
 }

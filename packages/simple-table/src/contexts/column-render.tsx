@@ -1,9 +1,16 @@
 import { createContext, PropsWithChildren, ReactNode, useContext } from 'react'
-import { Column } from './table'
+import { TableController } from '../table-controller'
 
 export type BaseRow = Record<string, ReactNode>
 
 export type DefaultColumnsBuilder<T = BaseRow> = (key: keyof T) => Column<T>
+
+export type Column<Row> = {
+  id: string
+  renderHead: () => ReactNode
+  renderBody: (row: Row, rowController: TableController) => ReactNode
+  renderFoot: (rows: Row[]) => ReactNode
+}
 
 const defaultBuilder: DefaultColumnsBuilder = key => ({
   id: key,
