@@ -44,19 +44,19 @@ describe('generateTypeUnion', () => {
       "import type { Literal as A } from '../data/actions'"
     )
     expect(content).toContain(
-      "import type { Literal as D } from '../data/permissions'"
+      "import type { Literal as B } from '../data/permissions'"
     )
     expect(content).toContain(
-      "import type { Literal as F } from '../data/users'"
+      "import type { Literal as C } from '../data/status'"
     )
     expect(content).toContain(
-      "import type { Literal as E } from '../data/status'"
+      "import type { Literal as D } from '../data/users'"
     )
     expect(content).toContain('export type BasicUnion =')
     expect(content).toContain('| A')
+    expect(content).toContain('| B')
+    expect(content).toContain('| C')
     expect(content).toContain('| D')
-    expect(content).toContain('| E')
-    expect(content).toContain('| F')
   })
 
   it('should handle nested directories with glob patterns', async () => {
@@ -73,10 +73,10 @@ describe('generateTypeUnion', () => {
 
     const content = readGeneratedFile(outputPath)
     expect(content).toContain(
-      "import type { Literal as G } from '../data/nested/deep'"
+      "import type { Literal as E } from '../data/nested/deep'"
     )
     expect(content).toContain('export type NestedUnion =')
-    expect(content).toContain('| G')
+    expect(content).toContain('| E')
   })
 
   it('should handle multiple ingredient types', async () => {
@@ -93,11 +93,10 @@ describe('generateTypeUnion', () => {
 
     const content = readGeneratedFile(outputPath)
     expect(content).toContain(
-      "import type { Literal as E, AnotherLiteral as F } from '../data/status'"
+      "import type { Literal as C, AnotherLiteral as D } from '../data/status'"
     )
     expect(content).toContain('export type MultiIngredient =')
     expect(content).toContain('| E')
-    expect(content).toContain('| F')
   })
 
   it('should ignore non-matching type names', async () => {

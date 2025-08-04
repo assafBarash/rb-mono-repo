@@ -16,10 +16,117 @@ export type ScriptOptions = {
   readonly verbose?: boolean
 }
 
+type CreateLoggerParams = {
+  readonly verbose: boolean
+}
+
+type AliasedImport = {
+  readonly originalName: string
+  readonly alias: string
+  readonly importPath: string
+}
+
+type Logger = {
+  readonly log: (...args: unknown[]) => void
+  readonly warn: (...args: unknown[]) => void
+}
+
+type ExtractExportTypesParams = {
+  readonly sourceFile: SourceFile
+  readonly ingredients: readonly string[]
+}
+
+type ProcessSourceFileParams = {
+  readonly filePath: string
+  readonly ingredients: readonly string[]
+}
+
+type ScanForTypeExportsParams = {
+  readonly srcPatterns: readonly string[]
+  readonly ingredients: readonly string[]
+}
+
+type NormalizeImportPathParams = {
+  readonly filePath: string
+  readonly dstPath: string
+}
+
+type CreateAliasedImportsParams = {
+  readonly typeExports: readonly TypeExportInfo[]
+  readonly dstPath: string
+}
+
+type FormatAliasedImportStatementParams = {
+  readonly importPath: string
+  readonly aliasedImports: readonly AliasedImport[]
+}
+
+type GenerateImportsParams = {
+  readonly typeExports: readonly TypeExportInfo[]
+  readonly dstPath: string
+}
+
+type GenerateUnionTypeParams = {
+  readonly typeExports: readonly TypeExportInfo[]
+  readonly unionTypeName: string
+  readonly dstPath: string
+}
+
+type AddImportsToSourceFileParams = {
+  readonly sourceFile: SourceFile
+  readonly imports: readonly string[]
+}
+
+type AddUnionTypeToSourceFileParams = {
+  readonly sourceFile: SourceFile
+  readonly unionTypeCode: string
+}
+
+type CreateDestinationFileParams = {
+  readonly imports: readonly string[]
+  readonly unionTypeCode: string
+  readonly dstPath: string
+}
+
+type LogScanProgressParams = {
+  readonly src: readonly string[]
+  readonly ingredients: readonly string[]
+  readonly logger: Logger
+}
+
+type LogFoundExportsParams = {
+  readonly typeExports: readonly TypeExportInfo[]
+  readonly logger: Logger
+}
+
+type LogGeneratedFileParams = {
+  readonly dst: string
+  readonly logger: Logger
+}
+
+type LogNoMatchesParams = {
+  readonly logger: Logger
+}
+
+const createLogger = (params: CreateLoggerParams): Logger => {
+  const { verbose } = params
+  return {
+    log: (...args: unknown[]) => verbose && console.log(...args),
+    warn: (...args: unknown[]) => verbose && console.warn(...args)
+  }
+}
+
+const createTsMorphProject = (): Project =>
+  new Project({
+    manipulationSettings: {
+      quoteKind: QuoteKind.Single
+    }
+  })
+
 const extractExportTypes = (
-  sourceFile: SourceFile,
-  ingredients: readonly string[]
+  params: ExtractExportTypesParams
 ): readonly string[] => {
+  const { sourceFile, ingredients } = params
   const typeAliases = sourceFile.getTypeAliases()
 
   return typeAliases
@@ -31,13 +138,13 @@ const extractExportTypes = (
 }
 
 const processSourceFile = (
-  filePath: string,
-  ingredients: readonly string[]
+  params: ProcessSourceFileParams
 ): readonly TypeExportInfo[] => {
+  const { filePath, ingredients } = params
   try {
     const project = new Project()
     const sourceFile = project.addSourceFileAtPath(filePath)
-    const exportedTypes = extractExportTypes(sourceFile, ingredients)
+    const exportedTypes = extractExportTypes({ sourceFile, ingredients })
 
     return exportedTypes.map(
       (typeName: string): TypeExportInfo => ({
@@ -53,32 +160,27 @@ const processSourceFile = (
 }
 
 const scanForTypeExports = async (
-  srcPatterns: readonly string[],
-  ingredients: readonly string[]
+  params: ScanForTypeExportsParams
 ): Promise<readonly TypeExportInfo[]> => {
+  const { srcPatterns, ingredients } = params
   const files = await fg([...srcPatterns], {
     ignore: ['node_modules/**', 'dist/**', '**/*.d.ts'],
     onlyFiles: true
   })
 
   return files.flatMap((filePath: string) =>
-    processSourceFile(filePath, ingredients)
+    processSourceFile({ filePath, ingredients })
   )
 }
 
-const normalizeImportPath = (filePath: string, dstPath: string): string => {
+const normalizeImportPath = (params: NormalizeImportPathParams): string => {
+  const { filePath, dstPath } = params
   const relativePath = path
     .relative(path.dirname(dstPath), filePath)
     .replace(/\.(ts|tsx)$/, '')
     .replace(/\\/g, '/')
 
   return relativePath.startsWith('.') ? relativePath : `./${relativePath}`
-}
-
-type AliasedImport = {
-  readonly originalName: string
-  readonly alias: string
-  readonly importPath: string
 }
 
 const generateAlphabeticalAlias = (index: number): string => {
@@ -95,14 +197,14 @@ const generateAlphabeticalAlias = (index: number): string => {
 }
 
 const createAliasedImports = (
-  typeExports: readonly TypeExportInfo[],
-  dstPath: string
+  params: CreateAliasedImportsParams
 ): readonly AliasedImport[] => {
+  const { typeExports, dstPath } = params
   let aliasIndex = 0
 
   return typeExports.map(exportInfo => {
     const { typeName, filePath } = exportInfo
-    const importPath = normalizeImportPath(filePath, dstPath)
+    const importPath = normalizeImportPath({ filePath, dstPath })
     const alias = generateAlphabeticalAlias(aliasIndex)
     aliasIndex++
 
@@ -123,9 +225,9 @@ const groupAliasedImportsByPath = (
 }
 
 const formatAliasedImportStatement = (
-  importPath: string,
-  aliasedImports: readonly AliasedImport[]
+  params: FormatAliasedImportStatementParams
 ): string => {
+  const { importPath, aliasedImports } = params
   const importSpecs = aliasedImports.map(({ originalName, alias }) =>
     originalName === alias ? originalName : `${originalName} as ${alias}`
   )
@@ -136,23 +238,18 @@ const formatAliasedImportStatement = (
   return `import type {\n  ${importSpecs.join(',\n  ')}\n} from '${importPath}';`
 }
 
-const generateImports = (
-  typeExports: readonly TypeExportInfo[],
-  dstPath: string
-): readonly string[] => {
-  const aliasedImports = createAliasedImports(typeExports, dstPath)
+const generateImports = (params: GenerateImportsParams): readonly string[] => {
+  const { typeExports, dstPath } = params
+  const aliasedImports = createAliasedImports({ typeExports, dstPath })
   const importMap = groupAliasedImportsByPath(aliasedImports)
   return Array.from(importMap.entries()).map(([importPath, imports]) =>
-    formatAliasedImportStatement(importPath, imports)
+    formatAliasedImportStatement({ importPath, aliasedImports: imports })
   )
 }
 
-const generateUnionType = (
-  typeExports: readonly TypeExportInfo[],
-  unionTypeName: string,
-  dstPath: string
-): string => {
-  const aliasedImports = createAliasedImports(typeExports, dstPath)
+const generateUnionType = (params: GenerateUnionTypeParams): string => {
+  const { typeExports, unionTypeName, dstPath } = params
+  const aliasedImports = createAliasedImports({ typeExports, dstPath })
   const uniqueAliases = [...new Set(aliasedImports.map(imp => imp.alias))]
 
   if (uniqueAliases.length === 0) {
@@ -176,10 +273,8 @@ const extractNamedImports = (importStatement: string): string[] => {
   return namedImportsMatch?.[1]?.split(',').map(s => s.trim()) ?? []
 }
 
-const addImportsToSourceFile = (
-  sourceFile: SourceFile,
-  imports: readonly string[]
-): void => {
+const addImportsToSourceFile = (params: AddImportsToSourceFileParams): void => {
+  const { sourceFile, imports } = params
   imports.forEach(importStatement => {
     const moduleSpecifier = extractModuleSpecifier(importStatement)
     const namedImports = extractNamedImports(importStatement)
@@ -200,9 +295,9 @@ const parseUnionTypeDeclaration = (unionTypeCode: string) => {
 }
 
 const addUnionTypeToSourceFile = (
-  sourceFile: SourceFile,
-  unionTypeCode: string
+  params: AddUnionTypeToSourceFileParams
 ): void => {
+  const { sourceFile, unionTypeCode } = params
   const parsedUnion = parseUnionTypeDeclaration(unionTypeCode)
   if (parsedUnion) {
     sourceFile.addTypeAlias({
@@ -213,85 +308,70 @@ const addUnionTypeToSourceFile = (
   }
 }
 
-const createProjectWithSingleQuotes = (): Project => {
-  return new Project({
-    manipulationSettings: {
-      quoteKind: QuoteKind.Single
-    }
-  })
-}
-
-const createDestinationFile = (
-  imports: readonly string[],
-  unionTypeCode: string,
-  dstPath: string
-): void => {
-  const project = createProjectWithSingleQuotes()
-  const sourceFile = project.createSourceFile(dstPath, '', { overwrite: true })
-
-  addImportsToSourceFile(sourceFile, imports)
-  addUnionTypeToSourceFile(sourceFile, unionTypeCode)
-
-  sourceFile.insertText(0, '// auto-generated::ts-literal-split\n\n')
-  sourceFile.saveSync()
-}
-
-const createVerboseLogger = (verbose: boolean) => ({
-  log: (...args: unknown[]) => verbose && console.log(...args),
-  warn: (...args: unknown[]) => verbose && console.warn(...args)
-})
-
-const logScanProgress = (
-  src: readonly string[],
-  ingredients: readonly string[],
-  verbose: boolean
-): void => {
-  const logger = createVerboseLogger(verbose)
+const logScanProgress = (params: LogScanProgressParams): void => {
+  const { src, ingredients, logger } = params
   logger.log('Scanning for type exports...')
   logger.log('Source patterns:', src)
   logger.log('Looking for ingredients:', ingredients)
 }
 
-const logFoundExports = (
-  typeExports: readonly TypeExportInfo[],
-  verbose: boolean
-): void => {
-  const logger = createVerboseLogger(verbose)
+const logFoundExports = (params: LogFoundExportsParams): void => {
+  const { typeExports, logger } = params
   logger.log(`Found ${typeExports.length} type exports:`)
   typeExports.forEach(exp => {
     logger.log(`  - ${exp.typeName} from ${exp.filePath}`)
   })
 }
 
-const logGeneratedFile = (dst: string, verbose: boolean): void => {
-  const logger = createVerboseLogger(verbose)
+const logGeneratedFile = (params: LogGeneratedFileParams): void => {
+  const { dst, logger } = params
   logger.log(`Generated union type file: ${dst}`)
 }
 
-const logNoMatches = (verbose: boolean): void => {
-  const logger = createVerboseLogger(verbose)
+const logNoMatches = (params: LogNoMatchesParams): void => {
+  const { logger } = params
   logger.warn('No matching type exports found!')
+}
+
+const createDestinationFile = (params: CreateDestinationFileParams): void => {
+  const { imports, unionTypeCode, dstPath } = params
+  const project = createTsMorphProject()
+  const sourceFile = project.createSourceFile(dstPath, '', { overwrite: true })
+
+  addImportsToSourceFile({ sourceFile, imports })
+  addUnionTypeToSourceFile({ sourceFile, unionTypeCode })
+
+  sourceFile.insertText(0, '// auto-generated::ts-literal-split\n\n')
+  sourceFile.saveSync()
 }
 
 export const generateTypeUnion = async (
   options: ScriptOptions
 ): Promise<void> => {
   const { src, dst, ingredients, name, verbose = false } = options
+  const logger = createLogger({ verbose })
 
-  logScanProgress(src, ingredients, verbose)
+  logScanProgress({ src, ingredients, logger })
 
-  const typeExports = await scanForTypeExports(src, ingredients)
+  const typeExports = await scanForTypeExports({
+    srcPatterns: src,
+    ingredients
+  })
 
   if (typeExports.length === 0) {
-    logNoMatches(verbose)
+    logNoMatches({ logger })
     return
   }
 
-  logFoundExports(typeExports, verbose)
+  logFoundExports({ typeExports, logger })
 
-  const imports = generateImports(typeExports, dst)
-  const unionType = generateUnionType(typeExports, name, dst)
+  const imports = generateImports({ typeExports, dstPath: dst })
+  const unionType = generateUnionType({
+    typeExports,
+    unionTypeName: name,
+    dstPath: dst
+  })
 
-  createDestinationFile(imports, unionType, dst)
-  logGeneratedFile(dst, verbose)
+  createDestinationFile({ imports, unionTypeCode: unionType, dstPath: dst })
+  logGeneratedFile({ dst, logger })
 }
