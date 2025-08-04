@@ -39,17 +39,24 @@ describe('generateTypeUnion', () => {
     expect(fs.existsSync(outputPath)).toBe(true)
 
     const content = readGeneratedFile(outputPath)
+    expect(content).toContain('// auto-generated::ts-literal-split')
     expect(content).toContain(
-      '// This file was auto-generated. Do not edit manually.'
+      "import type { Literal as A } from '../data/actions'"
     )
     expect(content).toContain(
-      "import type { Literal } from '../data/permissions'"
+      "import type { Literal as D } from '../data/permissions'"
     )
-    expect(content).toContain("import type { Literal } from '../data/users'")
-    expect(content).toContain("import type { Literal } from '../data/actions'")
-    expect(content).toContain("import type { Literal } from '../data/status'")
+    expect(content).toContain(
+      "import type { Literal as F } from '../data/users'"
+    )
+    expect(content).toContain(
+      "import type { Literal as E } from '../data/status'"
+    )
     expect(content).toContain('export type BasicUnion =')
-    expect(content).toContain('Literal')
+    expect(content).toContain('| A')
+    expect(content).toContain('| D')
+    expect(content).toContain('| E')
+    expect(content).toContain('| F')
   })
 
   it('should handle nested directories with glob patterns', async () => {
@@ -66,9 +73,10 @@ describe('generateTypeUnion', () => {
 
     const content = readGeneratedFile(outputPath)
     expect(content).toContain(
-      "import type { Literal } from '../data/nested/deep'"
+      "import type { Literal as G } from '../data/nested/deep'"
     )
     expect(content).toContain('export type NestedUnion =')
+    expect(content).toContain('| G')
   })
 
   it('should handle multiple ingredient types', async () => {
@@ -85,11 +93,11 @@ describe('generateTypeUnion', () => {
 
     const content = readGeneratedFile(outputPath)
     expect(content).toContain(
-      "import type { Literal, AnotherLiteral } from '../data/status'"
+      "import type { Literal as E, AnotherLiteral as F } from '../data/status'"
     )
     expect(content).toContain('export type MultiIngredient =')
-    expect(content).toContain('Literal')
-    expect(content).toContain('AnotherLiteral')
+    expect(content).toContain('| E')
+    expect(content).toContain('| F')
   })
 
   it('should ignore non-matching type names', async () => {
@@ -118,7 +126,10 @@ describe('generateTypeUnion', () => {
     expect(fs.existsSync(outputPath)).toBe(true)
 
     const content = readGeneratedFile(outputPath)
-    expect(content).toContain('export type SingleUnion = Literal;')
+    expect(content).toContain('export type SingleUnion = A;')
+    expect(content).toContain(
+      "import type { Literal as A } from '../data/permissions'"
+    )
     expect(content).not.toContain('|')
   })
 
@@ -194,8 +205,10 @@ export type Literal = 'duplicate-2'
     expect(fs.existsSync(outputPath)).toBe(true)
 
     const content = readGeneratedFile(outputPath)
-    const literalMatches = content.match(/import type { Literal }/g)
-    expect(literalMatches).toHaveLength(1)
+    const aliasMatches = content.match(/Literal as [A-Z]/g)
+    expect(aliasMatches).toHaveLength(2)
+    expect(content).toContain('export type Deduplicated = | A')
+    expect(content).toContain('| B')
 
     fs.unlinkSync(duplicateDataPath)
   })
