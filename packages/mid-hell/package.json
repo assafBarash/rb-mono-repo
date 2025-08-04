@@ -1,5 +1,5 @@
 {
-  "name": "mid-hell",
+  "name": "ts-split-literal",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,19 @@
     "build": "tsc",
     "predev": "npm run build",
     "pretest": "npm run build",
-    "dev": "node ./dist/main.js",
+    "dev": "node ./dist/index.js",
+    "cli": "npm run build && node ./dist/cli.js",
     "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "curry-on": "0.0.1-20"
+    "@types/mri": "^1.2.0",
+    "curry-on": "0.0.1-20",
+    "fast-glob": "^3.3.3",
+    "mri": "^1.2.0",
+    "ts-morph": "^25.0.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

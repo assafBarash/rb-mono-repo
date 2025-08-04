@@ -88,9 +88,21 @@ importers:
 
   packages/mid-hell:
     dependencies:
+      '@types/mri':
+        specifier: ^1.2.0
+        version: 1.2.0
       curry-on:
         specifier: 0.0.1-20
         version: 0.0.1-20
+      fast-glob:
+        specifier: ^3.3.3
+        version: 3.3.3
+      mri:
+        specifier: ^1.2.0
+        version: 1.2.0
+      ts-morph:
+        specifier: ^25.0.1
+        version: 25.0.1
     devDependencies:
       '@types/jest':
         specifier: ^29.5.14
@@ -1293,6 +1305,10 @@ packages:
 
   '@types/minimist@1.2.5':
     resolution: {integrity: sha512-hov8bUuiLiyFPGyFPE1lwWhmzYbirOXQNNo40+y3zow8aFVTeyn3VWL0VFFfdNddA8S4Vf0Tc062rzyNr7Paag==}
+
+  '@types/mri@1.2.0':
+    resolution: {integrity: sha512-G4+QT8Plq6q1UnOX6JgtLrEU/4QXF/Z5oNr6TWdiv9EU2hsJPbemH4rCecwNajzij+2CxrxFg2Y98Q+ViDV79Q==}
+    deprecated: This is a stub types definition. mri provides its own type definitions, so you do not need this installed.
 
   '@types/node@22.15.18':
     resolution: {integrity: sha512-v1DKRfUdyW+jJhZNEI1PYy29S2YRxMV5AOO/x/SjKmW0acCIOqmbj6Haf9eHAhsPmrhlHSxEhv/1WszcLWV4cg==}
@@ -3048,6 +3064,10 @@ packages:
   modify-values@1.0.1:
     resolution: {integrity: sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==}
     engines: {node: '>=0.10.0'}
+
+  mri@1.2.0:
+    resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
+    engines: {node: '>=4'}
 
   mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
@@ -5528,6 +5548,10 @@ snapshots:
 
   '@types/minimist@1.2.5': {}
 
+  '@types/mri@1.2.0':
+    dependencies:
+      mri: 1.2.0
+
   '@types/node@22.15.18':
     dependencies:
       undici-types: 6.21.0
@@ -7617,6 +7641,8 @@ snapshots:
       ufo: 1.6.1
 
   modify-values@1.0.1: {}
+
+  mri@1.2.0: {}
 
   mrmime@2.0.1: {}
 
