@@ -29,6 +29,8 @@ type Logger = {
 
 type Context = {
   readonly logger: Logger
+  readonly dstPath: string
+  readonly unionTypeName: string
 }
 
 type CreateLoggerParams = {
@@ -291,14 +293,6 @@ type ScanProgressLogParams = {
   readonly ingredients: readonly string[]
 }
 
-type FoundExportsLogParams = {
-  readonly typeExports: readonly TypeExportInfo[]
-}
-
-type GeneratedFileLogParams = {
-  readonly dst: string
-}
-
 const createScanProgressLog =
   ({ logger }: Context) =>
   (params: ScanProgressLogParams): void => {
@@ -310,8 +304,7 @@ const createScanProgressLog =
 
 const createFoundExportsLog =
   ({ logger }: Context) =>
-  (params: FoundExportsLogParams): void => {
-    const { typeExports } = params
+  (typeExports: readonly TypeExportInfo[]): void => {
     logger.log(`Found ${typeExports.length} type exports:`)
     typeExports.forEach(exp => {
       logger.log(`  - ${exp.typeName} from ${exp.filePath}`)
@@ -319,10 +312,9 @@ const createFoundExportsLog =
   }
 
 const createGeneratedFileLog =
-  ({ logger }: Context) =>
-  (params: GeneratedFileLogParams): void => {
-    const { dst } = params
-    logger.log(`Generated union type file: ${dst}`)
+  ({ logger, dstPath }: Context) =>
+  (): void => {
+    logger.log(`Generated union type file: ${dstPath}`)
   }
 
 const createNoMatchesLog =
@@ -354,11 +346,12 @@ export const generateTypeUnion = async (
 ): Promise<void> => {
   const { src, dst, ingredients, name, verbose = false } = options
   const logger = createLogger({ verbose })
+  const context: Context = { logger, dstPath: dst, unionTypeName: name }
 
-  const logScanProgress = createScanProgressLog({ logger })
-  const logFoundExports = createFoundExportsLog({ logger })
-  const logGeneratedFile = createGeneratedFileLog({ logger })
-  const logNoMatches = createNoMatchesLog({ logger })
+  const logScanProgress = createScanProgressLog(context)
+  const logFoundExports = createFoundExportsLog(context)
+  const logGeneratedFile = createGeneratedFileLog(context)
+  const logNoMatches = createNoMatchesLog(context)
 
   logScanProgress({ src, ingredients })
 
@@ -372,7 +365,7 @@ export const generateTypeUnion = async (
     return
   }
 
-  logFoundExports({ typeExports })
+  logFoundExports(typeExports)
 
   const imports = generateImports({ typeExports, dstPath: dst })
   const unionType = generateUnionType({
@@ -382,5 +375,5 @@ export const generateTypeUnion = async (
   })
 
   createDestinationFile({ imports, unionTypeCode: unionType, dstPath: dst })
-  logGeneratedFile({ dst })
+  logGeneratedFile()
 }
