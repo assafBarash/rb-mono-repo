@@ -8,6 +8,7 @@ type CliArgs = {
   readonly dst: string
   readonly ingredients: readonly string[]
   readonly name: string
+  readonly verbose: boolean
 }
 
 const showUsage = (): void => {
@@ -19,10 +20,11 @@ Options:
   --dst         Output file path where the generated union type will be written  
   --ingredients Comma-separated type names to search for in the scanned files
   --name        Name for the generated union type
+  --verbose     Enable verbose logging output
   --help        Show this help message
 
 Examples:
-  npm run cli -- --src "src/**/*.ts,lib/**/*.ts" --dst "src/generated/union.ts" --ingredients "PermissionLiteral,UserRole" --name "AllPermissions"
+  npm run cli -- --src "src/**/*.ts,lib/**/*.ts" --dst "src/generated/union.ts" --ingredients "PermissionLiteral,UserRole" --name "AllPermissions" --verbose
   npm run cli -- --src "*.ts" --dst "output.ts" --ingredients "MyType" --name "Combined"
   `)
 }
@@ -63,6 +65,7 @@ const parseArgs = (): CliArgs => {
       d: 'dst',
       i: 'ingredients',
       n: 'name',
+      v: 'verbose',
       h: 'help'
     }
   })
@@ -74,7 +77,7 @@ const parseArgs = (): CliArgs => {
 
   validateRequiredArgs(parsed)
 
-  const { src, dst, ingredients, name } = parsed
+  const { src, dst, ingredients, name, verbose } = parsed
   const srcArray = parseStringArray(src)
   const ingredientsArray = parseStringArray(ingredients)
 
@@ -84,7 +87,8 @@ const parseArgs = (): CliArgs => {
     src: srcArray,
     dst: String(dst),
     ingredients: ingredientsArray,
-    name: String(name)
+    name: String(name),
+    verbose: Boolean(verbose)
   }
 }
 

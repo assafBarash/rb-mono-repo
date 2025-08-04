@@ -13,6 +13,7 @@ export type ScriptOptions = {
   readonly dst: string
   readonly ingredients: readonly string[]
   readonly name: string
+  readonly verbose?: boolean
 }
 
 const extractExportTypes = (
@@ -235,41 +236,62 @@ const createDestinationFile = (
   sourceFile.saveSync()
 }
 
+const createVerboseLogger = (verbose: boolean) => ({
+  log: (...args: unknown[]) => verbose && console.log(...args),
+  warn: (...args: unknown[]) => verbose && console.warn(...args)
+})
+
 const logScanProgress = (
   src: readonly string[],
-  ingredients: readonly string[]
+  ingredients: readonly string[],
+  verbose: boolean
 ): void => {
-  console.log('Scanning for type exports...')
-  console.log('Source patterns:', src)
-  console.log('Looking for ingredients:', ingredients)
+  const logger = createVerboseLogger(verbose)
+  logger.log('Scanning for type exports...')
+  logger.log('Source patterns:', src)
+  logger.log('Looking for ingredients:', ingredients)
 }
 
-const logFoundExports = (typeExports: readonly TypeExportInfo[]): void => {
-  console.log(`Found ${typeExports.length} type exports:`)
+const logFoundExports = (
+  typeExports: readonly TypeExportInfo[],
+  verbose: boolean
+): void => {
+  const logger = createVerboseLogger(verbose)
+  logger.log(`Found ${typeExports.length} type exports:`)
   typeExports.forEach(exp => {
-    console.log(`  - ${exp.typeName} from ${exp.filePath}`)
+    logger.log(`  - ${exp.typeName} from ${exp.filePath}`)
   })
+}
+
+const logGeneratedFile = (dst: string, verbose: boolean): void => {
+  const logger = createVerboseLogger(verbose)
+  logger.log(`Generated union type file: ${dst}`)
+}
+
+const logNoMatches = (verbose: boolean): void => {
+  const logger = createVerboseLogger(verbose)
+  logger.warn('No matching type exports found!')
 }
 
 export const generateTypeUnion = async (
   options: ScriptOptions
 ): Promise<void> => {
-  const { src, dst, ingredients, name } = options
+  const { src, dst, ingredients, name, verbose = false } = options
 
-  logScanProgress(src, ingredients)
+  logScanProgress(src, ingredients, verbose)
 
   const typeExports = await scanForTypeExports(src, ingredients)
 
   if (typeExports.length === 0) {
-    console.warn('No matching type exports found!')
+    logNoMatches(verbose)
     return
   }
 
-  logFoundExports(typeExports)
+  logFoundExports(typeExports, verbose)
 
   const imports = generateImports(typeExports, dst)
   const unionType = generateUnionType(typeExports, name, dst)
 
   createDestinationFile(imports, unionType, dst)
-  console.log(`Generated union type file: ${dst}`)
+  logGeneratedFile(dst, verbose)
 }
