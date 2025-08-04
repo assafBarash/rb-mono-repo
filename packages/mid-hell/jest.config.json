@@ -1,0 +1,15 @@
+{
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+        "**/dist/**/*.spec.js"
+    ],
+    "moduleFileExtensions": [
+        "js",
+        "json"
+    ],
+    "transform": {},
+    "testPathIgnorePatterns": [
+        "<rootDir>/src/"
+    ]
+}
