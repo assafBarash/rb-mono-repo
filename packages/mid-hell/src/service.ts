@@ -1,6 +1,6 @@
 import * as path from 'path'
 import fg from 'fast-glob'
-import { Project, SourceFile, TypeAliasDeclaration } from 'ts-morph'
+import { Project, SourceFile, TypeAliasDeclaration, QuoteKind } from 'ts-morph'
 
 export type TypeExportInfo = {
   readonly typeName: string
@@ -149,7 +149,7 @@ const addUnionTypeToSourceFile = (
   sourceFile: SourceFile,
   unionTypeCode: string
 ): void => {
-  const unionMatch = unionTypeCode.match(/export type (\w+) = (.+);/)
+  const unionMatch = unionTypeCode.match(/export type (\w+) = ([\s\S]*?);/)
   if (unionMatch) {
     sourceFile.addTypeAlias({
       name: unionMatch[1],
@@ -164,7 +164,11 @@ const createDestinationFile = (
   unionTypeCode: string,
   dstPath: string
 ): void => {
-  const project = new Project()
+  const project = new Project({
+    manipulationSettings: {
+      quoteKind: QuoteKind.Single
+    }
+  })
   const sourceFile = project.createSourceFile(dstPath, '', { overwrite: true })
 
   sourceFile.insertText(
