@@ -8,9 +8,9 @@
     "build": "tsc",
     "predev": "npm run build",
     "pretest": "npm run build",
-    "dev": "node ./dist/index.js",
     "cli": "npm run build && node ./dist/cli.js",
-    "test": "jest"
+    "test": "jest",
+    "dev": "npm run cli -- --src \"./tests/data/*.ts\" --dst \"./tests/results/multi-ingredient.ts\" --ingredients \"Literal,AnotherLiteral\" --name \"MultiIngredient\""
   },
   "keywords": [],
   "author": "",

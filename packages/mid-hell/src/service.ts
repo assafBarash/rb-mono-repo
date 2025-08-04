@@ -74,56 +74,105 @@ const normalizeImportPath = (filePath: string, dstPath: string): string => {
   return relativePath.startsWith('.') ? relativePath : `./${relativePath}`
 }
 
-const groupTypesByFile = (
-  typeExports: readonly TypeExportInfo[],
-  dstPath: string
-): Map<string, readonly string[]> => {
-  return typeExports.reduce((acc, exportInfo) => {
-    const importPath = normalizeImportPath(exportInfo.filePath, dstPath)
-    const existingTypes = acc.get(importPath) ?? []
-    const updatedTypes = existingTypes.includes(exportInfo.typeName)
-      ? existingTypes
-      : [...existingTypes, exportInfo.typeName]
-
-    return new Map(acc).set(importPath, updatedTypes)
-  }, new Map<string, readonly string[]>())
+type AliasedImport = {
+  readonly originalName: string
+  readonly alias: string
+  readonly importPath: string
 }
 
-const formatImportStatement = (
+const generateAlphabeticalAlias = (index: number): string => {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let result = ''
+  let current = index
+
+  do {
+    result = alphabet[current % 26] + result
+    current = Math.floor(current / 26)
+  } while (current > 0)
+
+  return result
+}
+
+const createAliasedImports = (
+  typeExports: readonly TypeExportInfo[],
+  dstPath: string
+): readonly AliasedImport[] => {
+  let aliasIndex = 0
+
+  return typeExports.map(exportInfo => {
+    const { typeName, filePath } = exportInfo
+    const importPath = normalizeImportPath(filePath, dstPath)
+    const alias = generateAlphabeticalAlias(aliasIndex)
+    aliasIndex++
+
+    return { originalName: typeName, alias, importPath }
+  })
+}
+
+const groupAliasedImportsByPath = (
+  aliasedImports: readonly AliasedImport[]
+): Map<string, readonly AliasedImport[]> => {
+  return aliasedImports.reduce((acc, aliasedImport) => {
+    const existing = acc.get(aliasedImport.importPath) ?? []
+    return new Map(acc).set(aliasedImport.importPath, [
+      ...existing,
+      aliasedImport
+    ])
+  }, new Map<string, readonly AliasedImport[]>())
+}
+
+const formatAliasedImportStatement = (
   importPath: string,
-  types: readonly string[]
+  aliasedImports: readonly AliasedImport[]
 ): string => {
-  if (types.length === 1) {
-    return `import type { ${types[0]} } from '${importPath}';`
+  const importSpecs = aliasedImports.map(({ originalName, alias }) =>
+    originalName === alias ? originalName : `${originalName} as ${alias}`
+  )
+
+  if (importSpecs.length === 1) {
+    return `import type { ${importSpecs[0]} } from '${importPath}';`
   }
-  return `import type {\n  ${types.join(',\n  ')}\n} from '${importPath}';`
+  return `import type {\n  ${importSpecs.join(',\n  ')}\n} from '${importPath}';`
 }
 
 const generateImports = (
   typeExports: readonly TypeExportInfo[],
   dstPath: string
 ): readonly string[] => {
-  const importMap = groupTypesByFile(typeExports, dstPath)
-  return Array.from(importMap.entries()).map(([importPath, types]) =>
-    formatImportStatement(importPath, types)
+  const aliasedImports = createAliasedImports(typeExports, dstPath)
+  const importMap = groupAliasedImportsByPath(aliasedImports)
+  return Array.from(importMap.entries()).map(([importPath, imports]) =>
+    formatAliasedImportStatement(importPath, imports)
   )
 }
 
 const generateUnionType = (
   typeExports: readonly TypeExportInfo[],
-  unionTypeName: string
+  unionTypeName: string,
+  dstPath: string
 ): string => {
-  const uniqueTypes = [...new Set(typeExports.map(exp => exp.typeName))]
+  const aliasedImports = createAliasedImports(typeExports, dstPath)
+  const uniqueAliases = [...new Set(aliasedImports.map(imp => imp.alias))]
 
-  if (uniqueTypes.length === 0) {
+  if (uniqueAliases.length === 0) {
     return `export type ${unionTypeName} = never;`
   }
 
-  if (uniqueTypes.length === 1) {
-    return `export type ${unionTypeName} = ${uniqueTypes[0]};`
+  if (uniqueAliases.length === 1) {
+    return `export type ${unionTypeName} = ${uniqueAliases[0]};`
   }
 
-  return `export type ${unionTypeName} = \n  | ${uniqueTypes.join('\n  | ')};`
+  return `export type ${unionTypeName} = \n  | ${uniqueAliases.join('\n  | ')};`
+}
+
+const extractModuleSpecifier = (importStatement: string): string | null => {
+  const moduleMatch = importStatement.match(/from '(.+)'/)
+  return moduleMatch?.[1] ?? null
+}
+
+const extractNamedImports = (importStatement: string): string[] => {
+  const namedImportsMatch = importStatement.match(/{\s*([^}]+)\s*}/)
+  return namedImportsMatch?.[1]?.split(',').map(s => s.trim()) ?? []
 }
 
 const addImportsToSourceFile = (
@@ -131,32 +180,44 @@ const addImportsToSourceFile = (
   imports: readonly string[]
 ): void => {
   imports.forEach(importStatement => {
-    const moduleMatch = importStatement.match(/from '(.+)'/)
-    const namedImportsMatch = importStatement.match(/{\s*([^}]+)\s*}/)
+    const moduleSpecifier = extractModuleSpecifier(importStatement)
+    const namedImports = extractNamedImports(importStatement)
 
-    if (moduleMatch) {
+    if (moduleSpecifier) {
       sourceFile.addImportDeclaration({
-        moduleSpecifier: moduleMatch[1],
-        namedImports:
-          namedImportsMatch?.[1]?.split(',').map(s => s.trim()) ?? [],
+        moduleSpecifier,
+        namedImports,
         isTypeOnly: true
       })
     }
   })
 }
 
+const parseUnionTypeDeclaration = (unionTypeCode: string) => {
+  const unionMatch = unionTypeCode.match(/export type (\w+) = ([\s\S]*?);/)
+  return unionMatch ? { name: unionMatch[1], type: unionMatch[2].trim() } : null
+}
+
 const addUnionTypeToSourceFile = (
   sourceFile: SourceFile,
   unionTypeCode: string
 ): void => {
-  const unionMatch = unionTypeCode.match(/export type (\w+) = ([\s\S]*?);/)
-  if (unionMatch) {
+  const parsedUnion = parseUnionTypeDeclaration(unionTypeCode)
+  if (parsedUnion) {
     sourceFile.addTypeAlias({
-      name: unionMatch[1],
-      type: unionMatch[2].trim(),
+      name: parsedUnion.name,
+      type: parsedUnion.type,
       isExported: true
     })
   }
+}
+
+const createProjectWithSingleQuotes = (): Project => {
+  return new Project({
+    manipulationSettings: {
+      quoteKind: QuoteKind.Single
+    }
+  })
 }
 
 const createDestinationFile = (
@@ -164,19 +225,13 @@ const createDestinationFile = (
   unionTypeCode: string,
   dstPath: string
 ): void => {
-  const project = new Project({
-    manipulationSettings: {
-      quoteKind: QuoteKind.Single
-    }
-  })
+  const project = createProjectWithSingleQuotes()
   const sourceFile = project.createSourceFile(dstPath, '', { overwrite: true })
 
-  sourceFile.insertText(
-    0,
-    '// This file was auto-generated. Do not edit manually.\n\n'
-  )
   addImportsToSourceFile(sourceFile, imports)
   addUnionTypeToSourceFile(sourceFile, unionTypeCode)
+
+  sourceFile.insertText(0, '// auto-generated::ts-literal-split\n\n')
   sourceFile.saveSync()
 }
 
@@ -213,7 +268,7 @@ export const generateTypeUnion = async (
   logFoundExports(typeExports)
 
   const imports = generateImports(typeExports, dst)
-  const unionType = generateUnionType(typeExports, name)
+  const unionType = generateUnionType(typeExports, name, dst)
 
   createDestinationFile(imports, unionType, dst)
   console.log(`Generated union type file: ${dst}`)
