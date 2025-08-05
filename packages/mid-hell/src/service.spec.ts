@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { generateTypeUnion } from './service.js'
+import { Trait } from './service.js'
 
 const TESTS_DIR = path.join(__dirname, '../tests')
 const DATA_DIR = path.join(TESTS_DIR, 'data')
@@ -29,12 +29,15 @@ describe('generateTypeUnion', () => {
   it('should generate union type from multiple files with Literal type', async () => {
     const outputPath = path.join(RESULTS_DIR, 'basic-union.ts')
 
-    await generateTypeUnion({
-      src: [path.join(DATA_DIR, '*.ts')],
-      dst: outputPath,
-      ingredients: ['Literal'],
-      name: 'BasicUnion'
-    })
+    await Trait()
+      .from({
+        src: [path.join(DATA_DIR, '*.ts')],
+        ingredients: ['Literal']
+      })
+      .save({
+        dst: outputPath,
+        name: 'BasicUnion'
+      })
 
     expect(fs.existsSync(outputPath)).toBe(true)
 
@@ -62,32 +65,38 @@ describe('generateTypeUnion', () => {
   it('should handle nested directories with glob patterns', async () => {
     const outputPath = path.join(RESULTS_DIR, 'nested-union.ts')
 
-    await generateTypeUnion({
-      src: [path.join(DATA_DIR, '**/*.ts')],
-      dst: outputPath,
-      ingredients: ['Literal'],
-      name: 'NestedUnion'
-    })
+    await Trait()
+      .from({
+        src: [path.join(DATA_DIR, '**/*.ts')],
+        ingredients: ['Literal']
+      })
+      .save({
+        dst: outputPath,
+        name: 'NestedUnion'
+      })
 
     expect(fs.existsSync(outputPath)).toBe(true)
 
     const content = readGeneratedFile(outputPath)
     expect(content).toContain(
-      "import type { Literal as E } from '../data/nested/deep'"
+      "import type { Literal as B } from '../data/nested/deep'"
     )
     expect(content).toContain('export type NestedUnion =')
-    expect(content).toContain('| E')
+    expect(content).toContain('| B')
   })
 
   it('should handle multiple ingredient types', async () => {
     const outputPath = path.join(RESULTS_DIR, 'multi-ingredient.ts')
 
-    await generateTypeUnion({
-      src: [path.join(DATA_DIR, '*.ts')],
-      dst: outputPath,
-      ingredients: ['Literal', 'AnotherLiteral'],
-      name: 'MultiIngredient'
-    })
+    await Trait()
+      .from({
+        src: [path.join(DATA_DIR, '*.ts')],
+        ingredients: ['Literal', 'AnotherLiteral']
+      })
+      .save({
+        dst: outputPath,
+        name: 'MultiIngredient'
+      })
 
     expect(fs.existsSync(outputPath)).toBe(true)
 
@@ -102,12 +111,15 @@ describe('generateTypeUnion', () => {
   it('should ignore non-matching type names', async () => {
     const outputPath = path.join(RESULTS_DIR, 'filtered-union.ts')
 
-    await generateTypeUnion({
-      src: [path.join(DATA_DIR, '*.ts')],
-      dst: outputPath,
-      ingredients: ['NonExistentType'],
-      name: 'FilteredUnion'
-    })
+    await Trait()
+      .from({
+        src: [path.join(DATA_DIR, '*.ts')],
+        ingredients: ['NonExistentType']
+      })
+      .save({
+        dst: outputPath,
+        name: 'FilteredUnion'
+      })
 
     expect(fs.existsSync(outputPath)).toBe(false)
   })
@@ -115,12 +127,15 @@ describe('generateTypeUnion', () => {
   it('should handle single matching type', async () => {
     const outputPath = path.join(RESULTS_DIR, 'single-union.ts')
 
-    await generateTypeUnion({
-      src: [path.join(DATA_DIR, 'permissions.ts')],
-      dst: outputPath,
-      ingredients: ['Literal'],
-      name: 'SingleUnion'
-    })
+    await Trait()
+      .from({
+        src: [path.join(DATA_DIR, 'permissions.ts')],
+        ingredients: ['Literal']
+      })
+      .save({
+        dst: outputPath,
+        name: 'SingleUnion'
+      })
 
     expect(fs.existsSync(outputPath)).toBe(true)
 
@@ -135,12 +150,15 @@ describe('generateTypeUnion', () => {
   it('should generate never type when no matches found', async () => {
     const outputPath = path.join(RESULTS_DIR, 'never-union.ts')
 
-    await generateTypeUnion({
-      src: [path.join(DATA_DIR, 'unrelated.ts')],
-      dst: outputPath,
-      ingredients: ['Literal'],
-      name: 'NeverUnion'
-    })
+    await Trait()
+      .from({
+        src: [path.join(DATA_DIR, 'unrelated.ts')],
+        ingredients: ['Literal']
+      })
+      .save({
+        dst: outputPath,
+        name: 'NeverUnion'
+      })
 
     expect(fs.existsSync(outputPath)).toBe(false)
   })
@@ -148,12 +166,15 @@ describe('generateTypeUnion', () => {
   it('should create destination directory if it does not exist', async () => {
     const deepOutputPath = path.join(RESULTS_DIR, 'deep', 'nested', 'output.ts')
 
-    await generateTypeUnion({
-      src: [path.join(DATA_DIR, 'permissions.ts')],
-      dst: deepOutputPath,
-      ingredients: ['Literal'],
-      name: 'DeepNested'
-    })
+    await Trait()
+      .from({
+        src: [path.join(DATA_DIR, 'permissions.ts')],
+        ingredients: ['Literal']
+      })
+      .save({
+        dst: deepOutputPath,
+        name: 'DeepNested'
+      })
 
     expect(fs.existsSync(deepOutputPath)).toBe(true)
     expect(fs.existsSync(path.dirname(deepOutputPath))).toBe(true)
@@ -162,12 +183,15 @@ describe('generateTypeUnion', () => {
   it('should handle relative import paths correctly', async () => {
     const outputPath = path.join(RESULTS_DIR, 'relative-imports.ts')
 
-    await generateTypeUnion({
-      src: [path.join(DATA_DIR, '**/*.ts')],
-      dst: outputPath,
-      ingredients: ['Literal'],
-      name: 'RelativeImports'
-    })
+    await Trait()
+      .from({
+        src: [path.join(DATA_DIR, '**/*.ts')],
+        ingredients: ['Literal']
+      })
+      .save({
+        dst: outputPath,
+        name: 'RelativeImports'
+      })
 
     expect(fs.existsSync(outputPath)).toBe(true)
 
@@ -194,12 +218,15 @@ export type Literal = 'duplicate-2'
 
     const outputPath = path.join(RESULTS_DIR, 'deduplicated.ts')
 
-    await generateTypeUnion({
-      src: [duplicateDataPath],
-      dst: outputPath,
-      ingredients: ['Literal'],
-      name: 'Deduplicated'
-    })
+    await Trait()
+      .from({
+        src: [duplicateDataPath],
+        ingredients: ['Literal']
+      })
+      .save({
+        dst: outputPath,
+        name: 'Deduplicated'
+      })
 
     expect(fs.existsSync(outputPath)).toBe(true)
 

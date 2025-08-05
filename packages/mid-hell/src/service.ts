@@ -4,6 +4,44 @@ import { Project, TypeAliasDeclaration, QuoteKind, SourceFile } from 'ts-morph'
 import { TypeExportInfo, ScriptOptions, Context } from './types'
 import { LiteralLogger } from './logger-instance'
 
+type TraitConfig = {
+  readonly verbose?: boolean
+}
+
+type FromConfig = {
+  readonly src: readonly string[]
+  readonly ingredients: readonly string[]
+}
+
+type SaveConfig = {
+  readonly dst: string
+  readonly name: string
+}
+
+type TraitBuilder = {
+  from(config: FromConfig): FromBuilder
+}
+
+type FromBuilder = {
+  save(config: SaveConfig): Promise<void>
+}
+
+export const Trait = (config: TraitConfig = {}): TraitBuilder => ({
+  from: (fromConfig: FromConfig): FromBuilder => ({
+    save: async (saveConfig: SaveConfig): Promise<void> => {
+      const options: ScriptOptions = {
+        src: fromConfig.src,
+        ingredients: fromConfig.ingredients,
+        dst: saveConfig.dst,
+        name: saveConfig.name,
+        verbose: config.verbose ?? false
+      }
+
+      await generateTypeUnion(options)
+    }
+  })
+})
+
 type AliasedImport = {
   readonly originalName: string
   readonly alias: string
@@ -77,9 +115,9 @@ const scanForTypeExports = async (
     onlyFiles: true
   })
 
-  return files.flatMap((filePath: string) =>
-    processSourceFile({ filePath, ingredients })
-  )
+  return files
+    .sort()
+    .flatMap((filePath: string) => processSourceFile({ filePath, ingredients }))
 }
 
 type NormalizeImportPathParams = {
@@ -99,15 +137,13 @@ const normalizeImportPath = (params: NormalizeImportPathParams): string => {
 
 const generateAlphabeticalAlias = (index: number): string => {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  let result = ''
-  let current = index
 
-  do {
-    result = alphabet[current % 26] + result
-    current = Math.floor(current / 26)
-  } while (current > 0)
+  const generateAlias = (remaining: number): string =>
+    remaining < 26
+      ? alphabet[remaining]
+      : generateAlias(Math.floor(remaining / 26) - 1) + alphabet[remaining % 26]
 
-  return result
+  return generateAlias(index)
 }
 
 type CreateAliasedImportsParams = {
@@ -119,13 +155,11 @@ const createAliasedImports = (
   params: CreateAliasedImportsParams
 ): readonly AliasedImport[] => {
   const { typeExports, dstPath } = params
-  let aliasIndex = 0
 
-  return typeExports.map(exportInfo => {
+  return typeExports.map((exportInfo, aliasIndex) => {
     const { typeName, filePath } = exportInfo
     const importPath = normalizeImportPath({ filePath, dstPath })
     const alias = generateAlphabeticalAlias(aliasIndex)
-    aliasIndex++
 
     return { originalName: typeName, alias, importPath }
   })
@@ -271,9 +305,7 @@ const createDestinationFile = (params: CreateDestinationFileParams): void => {
   sourceFile.saveSync()
 }
 
-export const generateTypeUnion = async (
-  options: ScriptOptions
-): Promise<void> => {
+const generateTypeUnion = async (options: ScriptOptions): Promise<void> => {
   const { src, dst, ingredients, name, verbose = false } = options
   const context: Context = { dstPath: dst, unionTypeName: name, verbose }
 
@@ -281,7 +313,7 @@ export const generateTypeUnion = async (
 
   loggerInstance.logScanProgress({ src, ingredients })
 
-  const typeExports = await scanForTypeExports({
+  const typeExports: readonly TypeExportInfo[] = await scanForTypeExports({
     srcPatterns: src,
     ingredients
   })

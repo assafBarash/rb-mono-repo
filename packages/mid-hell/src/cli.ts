@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import mri from 'mri'
-import { generateTypeUnion } from './service.js'
+import { Trait } from './service.js'
 
 type CliArgs = {
   readonly src: readonly string[]
@@ -95,7 +95,16 @@ const parseArgs = (): CliArgs => {
 const runCli = async (): Promise<void> => {
   try {
     const options = parseArgs()
-    await generateTypeUnion(options)
+
+    await Trait({ verbose: options.verbose })
+      .from({
+        src: options.src,
+        ingredients: options.ingredients
+      })
+      .save({
+        dst: options.dst,
+        name: options.name
+      })
   } catch (error) {
     console.error('Error:', error)
     process.exit(1)
