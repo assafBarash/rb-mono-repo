@@ -2,10 +2,7 @@ import * as path from 'path'
 import fg from 'fast-glob'
 import { Project, TypeAliasDeclaration, QuoteKind, SourceFile } from 'ts-morph'
 import { TypeExportInfo, ScriptOptions, Context } from './types'
-import { createLoggerInstance } from './logger-instance'
-
-// Re-export types for external use
-export { TypeExportInfo, ScriptOptions } from './types'
+import { LiteralLogger } from './logger-instance'
 
 type AliasedImport = {
   readonly originalName: string
@@ -280,7 +277,7 @@ export const generateTypeUnion = async (
   const { src, dst, ingredients, name, verbose = false } = options
   const context: Context = { dstPath: dst, unionTypeName: name, verbose }
 
-  const loggerInstance = createLoggerInstance(context)
+  const loggerInstance = LiteralLogger(context)
 
   loggerInstance.logScanProgress({ src, ingredients })
 
@@ -294,7 +291,7 @@ export const generateTypeUnion = async (
     return
   }
 
-  loggerInstance.logFoundExports(typeExports)
+  loggerInstance.logFoundExports({ typeExports })
 
   const imports = generateImports({ typeExports, dstPath: dst })
   const unionType = generateUnionType({
