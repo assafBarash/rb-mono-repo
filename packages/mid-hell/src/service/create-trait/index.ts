@@ -22,10 +22,7 @@ export const executeTraitGeneration = async ({
     ingredients
   })
 
-  if (typeExports.length === 0) {
-    logger.logNoMatches()
-    return
-  }
+  if (!typeExports.length) return logger.logNoMatches()
 
   logger.logFoundExports({ typeExports })
 
