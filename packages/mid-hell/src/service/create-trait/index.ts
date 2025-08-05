@@ -1,11 +1,11 @@
-import { LiteralLogger } from '../../logger-instance'
+import { LiteralLogger } from '../logger'
 import { Context, ScriptOptions, TypeExportInfo } from '../../types'
 import { generateImports } from './generate-imports'
 import { generateUnion } from './generate-union'
 import { saveTraitFile } from './save-file'
 import { scanExports } from './scan-exports'
 
-export const executeTraitGeneration = async ({
+export const createTrait = async ({
   src,
   dst,
   ingredients,

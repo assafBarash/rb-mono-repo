@@ -1,4 +1,4 @@
-import { TypeExportInfo } from '../../types'
+import { TypeExportInfo } from '../../../types'
 import { LoggerContext } from '../types'
 
 type Params = {

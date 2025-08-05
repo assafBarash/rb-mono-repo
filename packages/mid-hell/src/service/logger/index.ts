@@ -1,4 +1,4 @@
-import { Context } from '../types'
+import { Context } from '../../types'
 import { createScanProgressLog } from './methods/scan-progress'
 import { createFoundExportsLog } from './methods/found-exports'
 import { createGeneratedFileLog } from './methods/generated-file'
