@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { Trait } from './service.js'
+import { Trait } from './service/index.js'
 
 const TESTS_DIR = path.join(__dirname, '../tests')
 const DATA_DIR = path.join(TESTS_DIR, 'data')

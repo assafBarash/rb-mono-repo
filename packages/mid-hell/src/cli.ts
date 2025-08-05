@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import mri from 'mri'
-import { Trait } from './service.js'
+import { Trait } from './service/index.js'
 
 type CliArgs = {
   readonly src: readonly string[]
