@@ -1,48 +1,16 @@
 import * as path from 'path'
 import fg from 'fast-glob'
-import { Project, SourceFile, TypeAliasDeclaration, QuoteKind } from 'ts-morph'
+import { Project, TypeAliasDeclaration, QuoteKind, SourceFile } from 'ts-morph'
+import { TypeExportInfo, ScriptOptions, Context } from './types'
+import { createLoggerInstance } from './logger-instance'
 
-export type TypeExportInfo = {
-  readonly typeName: string
-  readonly filePath: string
-  readonly relativePath: string
-}
-
-export type ScriptOptions = {
-  readonly src: readonly string[]
-  readonly dst: string
-  readonly ingredients: readonly string[]
-  readonly name: string
-  readonly verbose?: boolean
-}
+// Re-export types for external use
+export { TypeExportInfo, ScriptOptions } from './types'
 
 type AliasedImport = {
   readonly originalName: string
   readonly alias: string
   readonly importPath: string
-}
-
-type Logger = {
-  readonly log: (...args: unknown[]) => void
-  readonly warn: (...args: unknown[]) => void
-}
-
-type Context = {
-  readonly logger: Logger
-  readonly dstPath: string
-  readonly unionTypeName: string
-}
-
-type CreateLoggerParams = {
-  readonly verbose: boolean
-}
-
-const createLogger = (params: CreateLoggerParams): Logger => {
-  const { verbose } = params
-  return {
-    log: (...args: unknown[]) => verbose && console.log(...args),
-    warn: (...args: unknown[]) => verbose && console.warn(...args)
-  }
 }
 
 const createTsMorphProject = (): Project =>
@@ -288,41 +256,6 @@ const addUnionTypeToSourceFile = (
   }
 }
 
-type ScanProgressLogParams = {
-  readonly src: readonly string[]
-  readonly ingredients: readonly string[]
-}
-
-const createScanProgressLog =
-  ({ logger }: Context) =>
-  (params: ScanProgressLogParams): void => {
-    const { src, ingredients } = params
-    logger.log('Scanning for type exports...')
-    logger.log('Source patterns:', src)
-    logger.log('Looking for ingredients:', ingredients)
-  }
-
-const createFoundExportsLog =
-  ({ logger }: Context) =>
-  (typeExports: readonly TypeExportInfo[]): void => {
-    logger.log(`Found ${typeExports.length} type exports:`)
-    typeExports.forEach(exp => {
-      logger.log(`  - ${exp.typeName} from ${exp.filePath}`)
-    })
-  }
-
-const createGeneratedFileLog =
-  ({ logger, dstPath }: Context) =>
-  (): void => {
-    logger.log(`Generated union type file: ${dstPath}`)
-  }
-
-const createNoMatchesLog =
-  ({ logger }: Context) =>
-  (): void => {
-    logger.warn('No matching type exports found!')
-  }
-
 type CreateDestinationFileParams = {
   readonly imports: readonly string[]
   readonly unionTypeCode: string
@@ -345,15 +278,11 @@ export const generateTypeUnion = async (
   options: ScriptOptions
 ): Promise<void> => {
   const { src, dst, ingredients, name, verbose = false } = options
-  const logger = createLogger({ verbose })
-  const context: Context = { logger, dstPath: dst, unionTypeName: name }
+  const context: Context = { dstPath: dst, unionTypeName: name, verbose }
 
-  const logScanProgress = createScanProgressLog(context)
-  const logFoundExports = createFoundExportsLog(context)
-  const logGeneratedFile = createGeneratedFileLog(context)
-  const logNoMatches = createNoMatchesLog(context)
+  const loggerInstance = createLoggerInstance(context)
 
-  logScanProgress({ src, ingredients })
+  loggerInstance.logScanProgress({ src, ingredients })
 
   const typeExports = await scanForTypeExports({
     srcPatterns: src,
@@ -361,11 +290,11 @@ export const generateTypeUnion = async (
   })
 
   if (typeExports.length === 0) {
-    logNoMatches()
+    loggerInstance.logNoMatches()
     return
   }
 
-  logFoundExports(typeExports)
+  loggerInstance.logFoundExports(typeExports)
 
   const imports = generateImports({ typeExports, dstPath: dst })
   const unionType = generateUnionType({
@@ -375,5 +304,5 @@ export const generateTypeUnion = async (
   })
 
   createDestinationFile({ imports, unionTypeCode: unionType, dstPath: dst })
-  logGeneratedFile()
+  loggerInstance.logGeneratedFile()
 }
