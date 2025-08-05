@@ -5,7 +5,7 @@ import { generateUnion } from './generate-union'
 import { saveTraitFile } from './save-file'
 import { scanExports } from './scan-exports'
 
-export const createTrait = async ({
+export const executeTraitGeneration = async ({
   src,
   dst,
   ingredients,
@@ -13,10 +13,9 @@ export const createTrait = async ({
   verbose = false
 }: ScriptOptions): Promise<void> => {
   const context: Context = { dstPath: dst, unionTypeName: name, verbose }
+  const logger = LiteralLogger(context)
 
-  const loggerInstance = LiteralLogger(context)
-
-  loggerInstance.logScanProgress({ src, ingredients })
+  logger.logScanProgress({ src, ingredients })
 
   const typeExports: readonly TypeExportInfo[] = await scanExports({
     srcPatterns: src,
@@ -24,11 +23,11 @@ export const createTrait = async ({
   })
 
   if (typeExports.length === 0) {
-    loggerInstance.logNoMatches()
+    logger.logNoMatches()
     return
   }
 
-  loggerInstance.logFoundExports({ typeExports })
+  logger.logFoundExports({ typeExports })
 
   const imports = generateImports({ typeExports, dstPath: dst })
   const union = generateUnion({
@@ -38,5 +37,5 @@ export const createTrait = async ({
   })
 
   saveTraitFile({ imports, traitCode: union, dstPath: dst })
-  loggerInstance.logGeneratedFile()
+  logger.logGeneratedFile()
 }
