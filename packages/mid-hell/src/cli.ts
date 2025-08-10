@@ -9,6 +9,7 @@ type CliArgs = {
   readonly ingredients: readonly string[]
   readonly name: string
   readonly verbose: boolean
+  readonly mode: 'type' | 'const'
 }
 
 const showUsage = (): void => {
@@ -20,12 +21,13 @@ Options:
   --dst         Output file path where the generated union type will be written  
   --ingredients Comma-separated type names to search for in the scanned files
   --name        Name for the generated union type
+  --mode        Mode: 'type' for union types (default) or 'const' for const arrays
   --verbose     Enable verbose logging output
   --help        Show this help message
 
 Examples:
   npm run cli -- --src "src/**/*.ts,lib/**/*.ts" --dst "src/generated/union.ts" --ingredients "PermissionLiteral,UserRole" --name "AllPermissions" --verbose
-  npm run cli -- --src "*.ts" --dst "output.ts" --ingredients "MyType" --name "Combined"
+  npm run cli -- --src "*.ts" --dst "output.ts" --ingredients "MyType" --name "Combined" --mode "const"
   `)
 }
 
@@ -77,7 +79,7 @@ const parseArgs = (): CliArgs => {
 
   validateRequiredArgs(parsed)
 
-  const { src, dst, ingredients, name, verbose } = parsed
+  const { src, dst, ingredients, name, verbose, mode } = parsed
   const srcArray = parseStringArray(src)
   const ingredientsArray = parseStringArray(ingredients)
 
@@ -88,7 +90,8 @@ const parseArgs = (): CliArgs => {
     dst: String(dst),
     ingredients: ingredientsArray,
     name: String(name),
-    verbose: Boolean(verbose)
+    verbose: Boolean(verbose),
+    mode: (mode === 'const' ? 'const' : 'type') as 'type' | 'const'
   }
 }
 
@@ -96,7 +99,7 @@ const runCli = async (): Promise<void> => {
   try {
     const options = parseArgs()
 
-    await Trait({ verbose: options.verbose })
+    await Trait({ verbose: options.verbose, mode: options.mode })
       .from({
         src: options.src,
         ingredients: options.ingredients

@@ -1,5 +1,5 @@
-export type TypeExportInfo = {
-  readonly typeName: string
+export type ExportInfo = {
+  readonly exportName: string
   readonly filePath: string
   readonly relativePath: string
 }
@@ -10,6 +10,7 @@ export type ScriptOptions = {
   readonly ingredients: readonly string[]
   readonly name: string
   readonly verbose?: boolean
+  readonly mode?: 'type' | 'const'
 }
 
 export type Context = {

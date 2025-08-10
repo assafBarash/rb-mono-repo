@@ -1,14 +1,14 @@
-import { TypeExportInfo } from '../../types'
+import { ExportInfo } from '../../types'
 import { createAliasedImports } from './alias-imports'
 
 type Params = {
-  readonly typeExports: readonly TypeExportInfo[]
+  readonly exportInfos: readonly ExportInfo[]
   readonly unionTypeName: string
   readonly dstPath: string
 }
 
-export const generateUnion = ({ unionTypeName, ...params }: Params): string => {
-  const aliasedImports = createAliasedImports(params)
+export const generateUnion = ({ unionTypeName, exportInfos, dstPath }: Params): string => {
+  const aliasedImports = createAliasedImports({ exportInfos, dstPath })
   const uniqueAliases = [...new Set(aliasedImports.map(imp => imp.alias))]
 
   if (uniqueAliases.length === 0) {

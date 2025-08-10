@@ -1,36 +1,40 @@
-import { Project, SourceFile, TypeAliasDeclaration } from 'ts-morph'
-import { TypeExportInfo } from '../../types'
+import { Project, SourceFile, TypeAliasDeclaration, VariableDeclaration } from 'ts-morph'
+import { ExportInfo } from '../../types'
 import path from 'path'
 import fg from 'fast-glob'
 
 type Params = {
   readonly srcPatterns: readonly string[]
   readonly ingredients: readonly string[]
+  readonly mode?: 'type' | 'const'
 }
 
 export const scanExports = async ({
   srcPatterns,
-  ingredients
-}: Params): Promise<readonly TypeExportInfo[]> => {
+  ingredients,
+  mode = 'type'
+}: Params): Promise<readonly ExportInfo[]> => {
   const files = await fg([...srcPatterns], {
     ignore: ['node_modules/**', 'dist/**', '**/*.d.ts'],
     onlyFiles: true
   })
 
-  return files.sort().flatMap(processSourceFile(ingredients))
+  return files.sort().flatMap(processSourceFile(ingredients, mode))
 }
 
 const processSourceFile =
-  (ingredients: readonly string[]) =>
-  (filePath: string): readonly TypeExportInfo[] => {
+  (ingredients: readonly string[], mode: 'type' | 'const') =>
+  (filePath: string): readonly ExportInfo[] => {
     try {
       const project = new Project()
       const sourceFile = project.addSourceFileAtPath(filePath)
-      const exportedTypes = extractExportTypes({ sourceFile, ingredients })
+      const exportedNames = mode === 'type' 
+        ? extractExportTypes({ sourceFile, ingredients })
+        : extractExportConsts({ sourceFile, ingredients })
 
-      return exportedTypes.map(
-        (typeName: string): TypeExportInfo => ({
-          typeName,
+      return exportedNames.map(
+        (exportName: string): ExportInfo => ({
+          exportName,
           filePath,
           relativePath: path.relative(path.dirname(filePath), filePath)
         })
@@ -58,4 +62,26 @@ const extractExportTypes = ({
         typeAlias.isExported() && ingredients.includes(typeAlias.getName())
     )
     .map((typeAlias: TypeAliasDeclaration) => typeAlias.getName())
+}
+
+type ExtractExportConstsParams = {
+  readonly sourceFile: SourceFile
+  readonly ingredients: readonly string[]
+}
+
+const extractExportConsts = ({
+  sourceFile,
+  ingredients
+}: ExtractExportConstsParams): readonly string[] => {
+  const variableStatements = sourceFile.getVariableStatements()
+
+  return variableStatements
+    .filter(statement => statement.isExported())
+    .flatMap(statement => 
+      statement.getDeclarations()
+        .filter((declaration: VariableDeclaration) => 
+          ingredients.includes(declaration.getName())
+        )
+        .map((declaration: VariableDeclaration) => declaration.getName())
+    )
 }

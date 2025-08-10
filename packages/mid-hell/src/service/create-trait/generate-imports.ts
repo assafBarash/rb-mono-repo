@@ -1,8 +1,8 @@
-import { TypeExportInfo } from '../../types'
+import { ExportInfo } from '../../types'
 import { AliasedImport, createAliasedImports } from './alias-imports'
 
 type GenerateImportsParams = {
-  readonly typeExports: readonly TypeExportInfo[]
+  readonly exportInfos: readonly ExportInfo[]
   readonly dstPath: string
 }
 

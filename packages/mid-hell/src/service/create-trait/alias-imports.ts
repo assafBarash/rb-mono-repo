@@ -1,8 +1,8 @@
 import path from 'path'
-import { TypeExportInfo } from '../../types'
+import { ExportInfo } from '../../types'
 
 type Params = {
-  readonly typeExports: readonly TypeExportInfo[]
+  readonly exportInfos: readonly ExportInfo[]
   readonly dstPath: string
 }
 
@@ -13,15 +13,18 @@ export type AliasedImport = {
 }
 
 export const createAliasedImports = ({
-  typeExports,
+  exportInfos,
   dstPath
-}: Params): readonly AliasedImport[] =>
-  typeExports.map(({ typeName, filePath }, aliasIndex) => {
+}: Params): readonly AliasedImport[] => {
+  return exportInfos.map((exportInfo, aliasIndex) => {
+    const exportName = exportInfo.exportName
+    const filePath = exportInfo.filePath
     const importPath = normalizeImportPath({ filePath, dstPath })
     const alias = generateAlphabeticalAlias(aliasIndex)
 
-    return { originalName: typeName, alias, importPath }
+    return { originalName: exportName, alias, importPath }
   })
+}
 
 type NormalizeImportPathParams = {
   readonly filePath: string

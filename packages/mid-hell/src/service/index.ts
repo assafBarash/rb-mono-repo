@@ -2,6 +2,7 @@ import { createTrait } from './create-trait'
 
 type TraitConfig = {
   readonly verbose?: boolean
+  readonly mode?: 'type' | 'const'
 }
 
 type FromConfig = {

@@ -1,7 +1,8 @@
 import { LiteralLogger } from '../logger'
-import { Context, ScriptOptions, TypeExportInfo } from '../../types'
+import { Context, ScriptOptions, ExportInfo } from '../../types'
 import { generateImports } from './generate-imports'
 import { generateUnion } from './generate-union'
+import { generateConstArray } from './generate-const-array'
 import { saveTraitFile } from './save-file'
 import { scanExports } from './scan-exports'
 
@@ -10,29 +11,37 @@ export const createTrait = async ({
   dst,
   ingredients,
   name,
-  verbose = false
+  verbose = false,
+  mode = 'type'
 }: ScriptOptions): Promise<void> => {
   const context: Context = { dstPath: dst, unionTypeName: name, verbose }
   const logger = LiteralLogger(context)
 
   logger.logScanProgress({ src, ingredients })
 
-  const typeExports: readonly TypeExportInfo[] = await scanExports({
+  const exportInfos: readonly ExportInfo[] = await scanExports({
     srcPatterns: src,
-    ingredients
+    ingredients,
+    mode
   })
 
-  if (!typeExports.length) return logger.logNoMatches()
+  if (!exportInfos.length) return logger.logNoMatches()
 
-  logger.logFoundExports({ typeExports })
+  logger.logFoundExports({ typeExports: exportInfos })
 
-  const imports = generateImports({ typeExports, dstPath: dst })
-  const union = generateUnion({
-    typeExports,
-    unionTypeName: name,
-    dstPath: dst
-  })
+  const imports = generateImports({ exportInfos, dstPath: dst })
+  const traitCode = mode === 'type' 
+    ? generateUnion({
+        exportInfos,
+        unionTypeName: name,
+        dstPath: dst
+      })
+    : generateConstArray({
+        exportInfos,
+        arrayName: name,
+        dstPath: dst
+      })
 
-  saveTraitFile({ imports, traitCode: union, dstPath: dst })
+  saveTraitFile({ imports, traitCode, dstPath: dst })
   logger.logGeneratedFile()
 }

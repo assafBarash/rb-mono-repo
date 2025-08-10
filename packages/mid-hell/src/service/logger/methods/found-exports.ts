@@ -1,15 +1,15 @@
-import { TypeExportInfo } from '../../../types'
+import { ExportInfo } from '../../../types'
 import { LoggerContext } from '../types'
 
 type Params = {
-  readonly typeExports: readonly TypeExportInfo[]
+  readonly typeExports: readonly ExportInfo[]
 }
 
 export const createFoundExportsLog =
   ({ logger }: LoggerContext) =>
   ({ typeExports }: Params): void => {
-    logger.log(`Found ${typeExports.length} type exports:`)
+    logger.log(`Found ${typeExports.length} exports:`)
     typeExports.forEach(exp => {
-      logger.log(`  - ${exp.typeName} from ${exp.filePath}`)
+      logger.log(`  - ${exp.exportName} from ${exp.filePath}`)
     })
   }

@@ -238,4 +238,29 @@ export type Literal = 'duplicate-2'
 
     fs.unlinkSync(duplicateDataPath)
   })
+
+  it('should generate const array from multiple files with const mode', async () => {
+    const outputPath = path.join(RESULTS_DIR, 'const-array.ts')
+
+    await Trait({ mode: 'const' })
+      .from({
+        src: [path.join(DATA_DIR, 'const-*.ts')],
+        ingredients: ['Literal']
+      })
+      .save({
+        dst: outputPath,
+        name: 'ConstArray'
+      })
+
+    expect(fs.existsSync(outputPath)).toBe(true)
+
+    const content = readGeneratedFile(outputPath)
+    expect(content).toContain('// auto-generated::ts-literal-split')
+    expect(content).toContain('import { Literal as A }')
+    expect(content).toContain('import { Literal as B }')
+    expect(content).toContain('export const ConstArray = [')
+    expect(content).toContain('A,')
+    expect(content).toContain('B')
+    expect(content).toContain('] as const;')
+  })
 })
